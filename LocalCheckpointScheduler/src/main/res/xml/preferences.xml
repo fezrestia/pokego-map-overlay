@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+>
+
+    <PreferenceCategory
+            android:title="Overlay View"
+    >
+        <CheckBoxPreference
+            android:key="is_overlay_view_enabled"
+            android:title="Enable overlay view"
+            android:summary="Overlay view is en/disable"
+        />
+
+        <CheckBoxPreference
+            android:key="is_cycle_record_enabled"
+            android:title="Enable cycle record"
+            android:summary="Current cycle record is en/disable"
+        />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

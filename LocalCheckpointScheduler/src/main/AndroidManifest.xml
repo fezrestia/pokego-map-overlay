@@ -1,0 +1,60 @@
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.fezrestia.android.localcheckpointscheduler"
+>
+
+    <!-- Permissions. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Application. -->
+    <application
+            android:name=".UserApplication"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            android:hardwareAccelerated="true"
+            android:largeHeap="true"
+            android:persistent="true"
+    >
+
+        <!-- Activities. -->
+        <activity
+                android:name=".activity.UserPreferenceActivity"
+                android:label="@string/preference_label"
+                android:launchMode="singleTask"
+        >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+
+
+        <!-- Receivers. -->
+        <receiver
+                 android:name=".receiver.OverlayViewTriggerReceiver"
+        >
+            <intent-filter>
+                <action android:name="com.fezrestia.android.localcheckpointscheduler.intent.ACTION_OVERLAY_VIEW_TRIGGER" />
+            </intent-filter>
+        </receiver>
+
+
+
+        <!-- Services. -->
+        <service
+                android:name=".service.OverlayViewService"
+                android:exported="false"
+        />
+
+    </application>
+
+</manifest>
