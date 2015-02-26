@@ -125,7 +125,7 @@ public class UserWebView extends WebView {
         webSettings.setJavaScriptEnabled(true);
 
         webSettings.setAppCacheEnabled(true);
-        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         addJavascriptInterface(mJSNI, INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME);
 
