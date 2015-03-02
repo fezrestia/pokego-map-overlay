@@ -30,7 +30,7 @@ public class StorageController {
 
     // File name format.
     private static final SimpleDateFormat FILE_NAME_SDF
-            = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+            = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
 
     // Worker.
     private ExecutorService mBackWorker = null;
@@ -114,8 +114,7 @@ public class StorageController {
         createNewContentsDirectory(dir);
 
         // File name.
-        Calendar calendar = Calendar.getInstance();
-        final String fileName = FILE_NAME_SDF.format(calendar.getTime());
+        final String fileName = getDateTimeString();
 
         StoreFileTask task = new StoreFileTask(
                 mContext,
@@ -126,6 +125,16 @@ public class StorageController {
         mBackWorker.execute(task);
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "storeFile() : X");
+    }
+
+    /**
+     * Get Date / Time string.
+     *
+     * @return
+     */
+    public static String getDateTimeString() {
+        Calendar calendar = Calendar.getInstance();
+        return FILE_NAME_SDF.format(calendar.getTime());
     }
 
     private static class StoreFileTask implements Runnable {

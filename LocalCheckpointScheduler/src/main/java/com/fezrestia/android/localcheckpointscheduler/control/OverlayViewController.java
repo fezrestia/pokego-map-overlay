@@ -34,6 +34,8 @@ public class OverlayViewController {
     private StorageController mStorageController = null;
     // Current set dir name.
     private String mCurrentRootDirName = "DEFAULT";
+    // Screen shot set dir name pre-fix.
+    private static final String SET_DIR_NAME_PREFIX = "SET_";
 
     // Cyclic screen shot interval.
     private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 300;
@@ -270,7 +272,7 @@ public class OverlayViewController {
         mRootView.disableInteraction();
 
         // Current set name.
-        mCurrentRootDirName = "SET_" + System.currentTimeMillis();
+        mCurrentRootDirName = SET_DIR_NAME_PREFIX + StorageController.getDateTimeString();
 
         // Start.
         mCyclicScreenShotTask = new CyclicScreenShotTask(
