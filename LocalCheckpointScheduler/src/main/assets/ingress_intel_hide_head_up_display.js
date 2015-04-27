@@ -60,4 +60,12 @@ javascript:
         console.log("gm-style is NULL");
     }
 
+    var msgText = document.getElementById('loading_msg_text');
+    if (msgText != null) {
+        msgText.style.textShadow = "none";
+        msgText.style.opacity = 0.0;
+    } else {
+        console.log("loading_msg_text is NULL");
+    }
+
 })((this || 0).self || global);

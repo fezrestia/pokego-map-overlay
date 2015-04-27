@@ -63,9 +63,6 @@ public class UserWebView extends WebView {
     private static final String JS_LOAD_CONTENT_HTML
             = "load_content_html.js";
     private ExecuteJsTask mLoadContentHtmlTask = null;
-    private static final String JS_ESCAPE_LOADING_MSG
-            = "ingress_intel_escape_loading_indicator.js";
-    private ExecuteJsTask mEscapeLoadingMsgTask = null;
 
     private class JsIngressIntelHideHudCallback implements ValueCallback<String> {
         // Log tag.
@@ -145,8 +142,6 @@ public class UserWebView extends WebView {
         mLoadShowHudJsTask = new ExecuteJsTask(script);
         script = loadJs(JS_LOAD_CONTENT_HTML);
         mLoadContentHtmlTask = new ExecuteJsTask(script);
-        script = loadJs(JS_ESCAPE_LOADING_MSG);
-        mEscapeLoadingMsgTask = new ExecuteJsTask(script);
 
         // Load.
         String intelUrl = INITIAL_LOAD_URL;
@@ -204,9 +199,6 @@ public class UserWebView extends WebView {
             }
             if (mReloadTask != null) {
                 mUiWorker.removeCallbacks(mReloadTask);
-            }
-            if (mEscapeLoadingMsgTask != null) {
-                mUiWorker.removeCallbacks(mEscapeLoadingMsgTask);
             }
             mUiWorker = null;
         }
@@ -280,7 +272,6 @@ public class UserWebView extends WebView {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "onPageFinished()");
 
             mUiWorker.post(mLoadContentHtmlTask);
-            mUiWorker.post(mEscapeLoadingMsgTask);
         }
 
         @Override
