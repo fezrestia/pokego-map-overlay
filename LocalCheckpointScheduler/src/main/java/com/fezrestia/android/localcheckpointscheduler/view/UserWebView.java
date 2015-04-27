@@ -46,9 +46,6 @@ public class UserWebView extends WebView {
     // Is interactive mode or not.
     private boolean mIsInInteractiveMode = true;
 
-    // Javascript wait timeout.
-    private static final int JS_DONE_TIMEOUT_MILLIS = 3000;
-
     // Initial load target URL.
     private static final String INITIAL_LOAD_URL = "https://www.ingress.com/intel";
 
@@ -336,7 +333,7 @@ public class UserWebView extends WebView {
         if (mScreenShotTask == null) {
             // Capture screen shot.
             mScreenShotTask = new ScreenShotTask(callback);
-            mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT_MILLIS);
+            mUiWorker.post(mScreenShotTask);
         } else {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
         }
@@ -351,10 +348,10 @@ public class UserWebView extends WebView {
         if (mScreenShotTask == null) {
             // Capture screen shot.
             mScreenShotTask = new ScreenShotTask(callback);
-            mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT_MILLIS);
+            mUiWorker.post(mScreenShotTask);
 
             // Reload.
-            mUiWorker.postDelayed(mReloadTask, JS_DONE_TIMEOUT_MILLIS + 500);
+            mUiWorker.postDelayed(mReloadTask, 1000); //TODO:Consider timeout millis.
         } else {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
         }
