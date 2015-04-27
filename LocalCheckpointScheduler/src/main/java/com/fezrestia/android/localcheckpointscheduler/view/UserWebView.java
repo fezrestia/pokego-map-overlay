@@ -49,6 +49,9 @@ public class UserWebView extends WebView {
     // Initial load target URL.
     private static final String INITIAL_LOAD_URL = "https://www.ingress.com/intel";
 
+    // JS done timeout.
+    private static final int JS_DONE_TIMEOUT = 1000;
+
     // JS file.
     private static final String INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME = "jsni";
     private static final String JS_INGRESS_INTEL_HIDE_HEAD_UP_DISPLAY
@@ -331,9 +334,9 @@ public class UserWebView extends WebView {
      */
     public void requestScreenShot(OnScreenShotDoneCallback callback) {
         if (mScreenShotTask == null) {
-            // Capture screen shot.
+            // Start capture screen shot. Wait for hide HUD task done.
             mScreenShotTask = new ScreenShotTask(callback);
-            mUiWorker.post(mScreenShotTask);
+            mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT);
         } else {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
         }
