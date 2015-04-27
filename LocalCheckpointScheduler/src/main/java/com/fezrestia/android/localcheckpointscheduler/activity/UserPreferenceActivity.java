@@ -80,58 +80,67 @@ public class UserPreferenceActivity extends PreferenceActivity {
             implements  Preference.OnPreferenceChangeListener {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
+            String key = preference.getKey();
             String stringValue = value.toString();
 
-            if (preference instanceof ListPreference) {
-                // NOP.
-            } else if (preference instanceof CheckBoxPreference) {
-                String key = preference.getKey();
-                if (key == null) {
-                    // NOP.
-                    if (Log.IS_DEBUG) Log.logDebug(TAG, "CheckBox key == null");
-                } else if (Constants.SP_KEY_OVERLAY_VIEW_ENABLED.equals(key)) {
-                    final boolean isChecked = ((Boolean) value).booleanValue();
+            switch(key) {
+                case Constants.SP_KEY_OVERLAY_VIEW_ENABLED:
+                    {
+                        final boolean isChecked = ((Boolean) value).booleanValue();
 
-                    if (isChecked) {
-                        // Update UI.
-                        mCycleRecordEnDis.setEnabled(true);
+                        if (isChecked) {
+                            // Update UI.
+                            mCycleRecordEnDis.setEnabled(true);
 
-                        // Start overlay.
-                        OverlayViewController.LifeCycleTrigger.getInstance()
-                                .requestStart(getApplicationContext());
-                    } else {
-                        // Update UI.
-                        mCycleRecordEnDis.setEnabled(false);
+                            // Start overlay.
+                            OverlayViewController.LifeCycleTrigger.getInstance()
+                                    .requestStart(getApplicationContext());
+                        } else {
+                            // Update UI.
+                            mCycleRecordEnDis.setEnabled(false);
 
-                        // Stop overlay.
-                        OverlayViewController.LifeCycleTrigger.getInstance()
-                                .requestStop(getApplicationContext());
+                            // Stop overlay.
+                            OverlayViewController.LifeCycleTrigger.getInstance()
+                                    .requestStop(getApplicationContext());
+                        }
                     }
-                } else if (Constants.SP_KEY_CYCLE_RECORD_ENABLED.equals(key)) {
-                    final boolean isChecked = ((Boolean) value).booleanValue();
+                    break;
 
-                    if (isChecked) {
-                        // Update UI.
-                        mOverlayEnDis.setEnabled(false);
+                case Constants.SP_KEY_CYCLE_RECORD_ENABLED:
+                    {
+                        final boolean isChecked = ((Boolean) value).booleanValue();
 
-                        // Start recording.
-                        OverlayViewController.getInstance().startCyclicScreenShotTask();
-                    } else {
-                        // Update UI.
-                        mOverlayEnDis.setEnabled(true);
+                        if (isChecked) {
+                            // Update UI.
+                            mOverlayEnDis.setEnabled(false);
 
-                        // Stop recording.
-                        OverlayViewController.getInstance().stopCyclicScreenShotTask();
+                            // Show overlay view.
+                            OverlayViewController.LifeCycleTrigger.getInstance()
+                                    .requestStart(getApplicationContext());
+
+                            // Start recording.
+                            OverlayViewController.getInstance().startCyclicScreenShotTask();
+
+                            // Finish own self.
+                            UserPreferenceActivity.this.finish();
+                        } else {
+                            // Update UI.
+                            mOverlayEnDis.setEnabled(true);
+
+                            // Stop recording.
+                            OverlayViewController.getInstance().stopCyclicScreenShotTask();
+
+                            // Show overlay view.
+                            OverlayViewController.LifeCycleTrigger.getInstance()
+                                    .requestStart(getApplicationContext());
+                        }
                     }
-                } else {
-                    // NOP.
-                    if (Log.IS_DEBUG) Log.logDebug(TAG, "Unexpected CheckBox preference.");
-                }
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
+                    break;
+
+                default:
+                    throw new IllegalArgumentException();
             }
+
             return true;
         }
     }
