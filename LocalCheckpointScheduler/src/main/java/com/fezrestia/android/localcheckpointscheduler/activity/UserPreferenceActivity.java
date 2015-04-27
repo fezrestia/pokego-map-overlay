@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 
 import com.fezrestia.android.localcheckpointscheduler.Constants;
 import com.fezrestia.android.localcheckpointscheduler.R;
+import com.fezrestia.android.localcheckpointscheduler.UserApplication;
 import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
 import com.fezrestia.android.localcheckpointscheduler.util.Log;
 
@@ -23,7 +24,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
     @Override
     public void onCreate(Bundle bundle) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onCreate()");
-        super.onCreate(null);
+        super.onCreate(bundle);
 
         // Add view finder anywhere preferences.
         addPreferencesFromResource(R.xml.preferences);
@@ -38,25 +39,14 @@ public class UserPreferenceActivity extends PreferenceActivity {
         updatePreferences();
         applyCurrentPreferences();
 
-        // Cache.
+        // Overlay enabled or not.
         mOverlayEnDis = findPreference(Constants.SP_KEY_OVERLAY_VIEW_ENABLED);
+        mOverlayEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mOverlayEnDis);
+        // Record enabled or not.
         mCycleRecordEnDis = findPreference(Constants.SP_KEY_CYCLE_RECORD_ENABLED);
-        bindPreferenceSummaryToValue(mOverlayEnDis);
-        bindPreferenceSummaryToValue(mCycleRecordEnDis);
-
-        // Check.
-        boolean isOverlayEnabled = mOverlayEnDis.getSharedPreferences().getBoolean(
-                Constants.SP_KEY_OVERLAY_VIEW_ENABLED,
-                false);
-        boolean isCycleRecordEnabled = mCycleRecordEnDis.getSharedPreferences().getBoolean(
-                Constants.SP_KEY_CYCLE_RECORD_ENABLED,
-                false);
-        if (!isOverlayEnabled) {
-            mCycleRecordEnDis.setEnabled(false);
-        }
-        if (isCycleRecordEnabled) {
-            mOverlayEnDis.setEnabled(false);
-        }
+        mCycleRecordEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mCycleRecordEnDis);
     }
 
     @Override
@@ -146,16 +136,41 @@ public class UserPreferenceActivity extends PreferenceActivity {
         }
     }
 
-    private void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+    private void bindPreference(Preference preference) {
 
-        if (preference instanceof ListPreference) {
-            mOnPreferenceChangeListener.onPreferenceChange(
-                    preference,
-                    PreferenceManager
-                            .getDefaultSharedPreferences(preference.getContext())
-                            .getString(preference.getKey(), ""));
+        String key = preference.getKey();
+
+        switch (key) {
+            case Constants.SP_KEY_OVERLAY_VIEW_ENABLED:
+                boolean isCycleRecordEnabled = UserApplication.getGlobalSharedPreferences()
+                        .getBoolean(Constants.SP_KEY_CYCLE_RECORD_ENABLED, false);
+                if (isCycleRecordEnabled) {
+                    preference.setEnabled(false);
+                }
+                break;
+
+            case Constants.SP_KEY_CYCLE_RECORD_ENABLED:
+                boolean isOverlayEnabled = UserApplication.getGlobalSharedPreferences()
+                        .getBoolean(Constants.SP_KEY_OVERLAY_VIEW_ENABLED, false);
+                if (!isOverlayEnabled) {
+                    preference.setEnabled(false);
+                }
+                break;
+
+            default:
+                throw new IllegalArgumentException();
+
+
+            // List
+        // Set the listener to watch for value changes.
+//        preference.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+//
+//        mOnPreferenceChangeListener.onPreferenceChange(
+//                preference,
+//                PreferenceManager
+//                        .getDefaultSharedPreferences(preference.getContext())
+//                        .getString(preference.getKey(), ""));
+
         }
     }
 }

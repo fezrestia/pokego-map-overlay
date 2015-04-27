@@ -41,9 +41,9 @@ public class OverlayViewController {
     private static final String SET_DIR_NAME_PREFIX = "SET_";
 
     // Cyclic screen shot interval.
-    private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60;
+    private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 10;//60;
     // Web page reload timeout.
-    private static final int WEBVIEW_TIMEOUT_SEC = 1 * 60 * 60;
+    private static final int WEBVIEW_TIMEOUT_SEC = 30;//1 * 60 * 60;
 
     // Cyclic screen shot task.
     private CyclicScreenShotTask mCyclicScreenShotTask = null;
