@@ -3,11 +3,14 @@ package com.fezrestia.android.localcheckpointscheduler.control;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 
 import com.fezrestia.android.localcheckpointscheduler.R;
+import com.fezrestia.android.localcheckpointscheduler.Constants;
+import com.fezrestia.android.localcheckpointscheduler.UserApplication;
 import com.fezrestia.android.localcheckpointscheduler.service.OverlayViewService;
 import com.fezrestia.android.localcheckpointscheduler.storage.StorageController;
 import com.fezrestia.android.localcheckpointscheduler.util.Log;
@@ -38,7 +41,9 @@ public class OverlayViewController {
     private static final String SET_DIR_NAME_PREFIX = "SET_";
 
     // Cyclic screen shot interval.
-    private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 300;
+    private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60;
+    // Web page reload timeout.
+    private static final int WEBVIEW_TIMEOUT_SEC = 1 * 60 * 60;
 
     // Cyclic screen shot task.
     private CyclicScreenShotTask mCyclicScreenShotTask = null;
@@ -300,6 +305,9 @@ public class OverlayViewController {
         // Log tag.
         private final String TAG = CyclicScreenShotTask.class.getSimpleName();
 
+        // Capture count.
+        private int mCaptureCount = 0;
+
         // Callback.
         private final UserWebView.OnScreenShotDoneCallback mCallback;
 
@@ -320,8 +328,24 @@ public class OverlayViewController {
                 // Capture and reload.
                 mRootView.requestCapture(mCallback);
 
-                // Next.
-                mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
+                // Count up.
+                ++mCaptureCount;
+
+                if ((WEBVIEW_TIMEOUT_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC) <= mCaptureCount) {
+                    // Capture count is maximum. Stop it.
+                    stopCyclicScreenShotTask();
+
+                    // Reset setting.
+                    SharedPreferences.Editor editor
+                            = UserApplication.getGlobalSharedPreferences().edit();
+                    editor.putBoolean(Constants.SP_KEY_CYCLE_RECORD_ENABLED, false);
+                    editor.apply();
+                    editor.commit();
+
+                } else {
+                    // Go to next capture.
+                    mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
+                }
             }
         }
     }

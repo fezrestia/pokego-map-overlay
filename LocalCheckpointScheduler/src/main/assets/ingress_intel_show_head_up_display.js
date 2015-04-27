@@ -6,7 +6,7 @@ javascript:
     if (gmnoprintArray != null) {
         for (i = 0; i < gmnoprintArray.length; ++i) {
             console.log("gmnoprint Elm = " + gmnoprintArray[i].className);
-            gmnoprintArray[i].style.display = "none";
+            gmnoprintArray[i].style.display = "inline";
         }
     } else {
         console.log("gmnoprint is NULL");
@@ -14,28 +14,28 @@ javascript:
 
     var snapControl = document.getElementById("snapcontrol");
     if (snapControl != null) {
-        snapControl.style.display = "none";
+        snapControl.style.display = "inline";
     } else {
         console.log("snapcontrol is NULL");
     }
 
     var passcodeIcon = document.getElementById("passcode_icon");
     if (passcodeIcon != null) {
-        passcodeIcon.style.display = "none";
+        passcodeIcon.style.display = "inline";
     } else {
         console.log("passcode_icon is NULL");
     }
 
     var versionSwitcher = document.getElementById("version_switcher");
     if (versionSwitcher != null) {
-        versionSwitcher.style.display = "none";
+        versionSwitcher.style.display = "inline";
     } else {
         console.log("version_switcher is NULL");
     }
 
     var geoTools = document.getElementById("geotools");
     if (geoTools != null) {
-        geoTools.style.display = "none";
+        geoTools.style.display = "inline";
     } else {
         console.log("geotools is NULL");
     }
@@ -49,7 +49,7 @@ javascript:
                     console.log("MapCanvas child Z-Index = " + gmStyleChildArray[j].style.zIndex);
                     if (gmStyleChildArray[j].style.zIndex == 1000000) {
                         console.log("Do HIDE");
-                        gmStyleChildArray[j].style.display = "none";
+                        gmStyleChildArray[j].style.display = "inline";
                     }
                 }
             } else {

@@ -57,6 +57,9 @@ public class UserWebView extends WebView {
     private static final String JS_INGRESS_INTEL_HIDE_HEAD_UP_DISPLAY
             = "ingress_intel_hide_head_up_display.js";
     private ExecuteJsTask mLoadHideHudJsTask = null;
+    private static final String JS_INGRESS_INTEL_SHOW_HEAD_UP_DISPLAY
+            = "ingress_intel_show_head_up_display.js";
+    private ExecuteJsTask mLoadShowHudJsTask = null;
     private static final String JS_LOAD_CONTENT_HTML
             = "load_content_html.js";
     private ExecuteJsTask mLoadContentHtmlTask = null;
@@ -138,6 +141,8 @@ public class UserWebView extends WebView {
         String script;
         script = loadJs(JS_INGRESS_INTEL_HIDE_HEAD_UP_DISPLAY);
         mLoadHideHudJsTask = new ExecuteJsTask(script);
+        script = loadJs(JS_INGRESS_INTEL_SHOW_HEAD_UP_DISPLAY);
+        mLoadShowHudJsTask = new ExecuteJsTask(script);
         script = loadJs(JS_LOAD_CONTENT_HTML);
         mLoadContentHtmlTask = new ExecuteJsTask(script);
         script = loadJs(JS_ESCAPE_LOADING_MSG);
@@ -190,6 +195,9 @@ public class UserWebView extends WebView {
             }
             if (mLoadHideHudJsTask != null) {
                 mUiWorker.removeCallbacks(mLoadHideHudJsTask);
+            }
+            if (mLoadShowHudJsTask != null) {
+                mUiWorker.removeCallbacks(mLoadShowHudJsTask);
             }
             if (mLoadContentHtmlTask != null) {
                 mUiWorker.removeCallbacks(mLoadContentHtmlTask);
@@ -320,15 +328,27 @@ public class UserWebView extends WebView {
     }
 
     /**
+     * Request to capture screen shot.
+     *
+     * @param callback
+     */
+    public void requestScreenShot(OnScreenShotDoneCallback callback) {
+        if (mScreenShotTask == null) {
+            // Capture screen shot.
+            mScreenShotTask = new ScreenShotTask(callback);
+            mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT_MILLIS);
+        } else {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
+        }
+    }
+
+    /**
      * Request to capture screen shot, after then, reload automatically.
      *
      * @param callback
      */
     public void requestScreenShotAndReload(OnScreenShotDoneCallback callback) {
         if (mScreenShotTask == null) {
-            // Hide HUD.
-            mUiWorker.post(mLoadHideHudJsTask);
-
             // Capture screen shot.
             mScreenShotTask = new ScreenShotTask(callback);
             mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT_MILLIS);
@@ -439,6 +459,9 @@ public class UserWebView extends WebView {
      */
     public void enableInteraction() {
         mIsInInteractiveMode = true;
+
+        // Show HUD.
+        mUiWorker.post(mLoadShowHudJsTask);
     }
 
     /**
@@ -446,6 +469,9 @@ public class UserWebView extends WebView {
      */
     public void disableInteraction() {
         mIsInInteractiveMode = false;
+
+        // Hide HUD.
+        mUiWorker.post(mLoadHideHudJsTask);
     }
 
     @Override

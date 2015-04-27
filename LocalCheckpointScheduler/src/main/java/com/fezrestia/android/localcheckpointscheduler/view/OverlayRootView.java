@@ -75,7 +75,6 @@ public class OverlayRootView extends FrameLayout {
 
     // UI scale.
     private static final float mUiScaleRate = 0.5f;
-    private float mInteractiveScaleOffset = 1.0f;
 
     // CONSTRUCTOR.
     public OverlayRootView(final Context context) {
@@ -249,8 +248,8 @@ public class OverlayRootView extends FrameLayout {
     }
 
     private void updateLayoutParams() {
-        mUserWebView.setScaleX(mUiScaleRate * mInteractiveScaleOffset);
-        mUserWebView.setScaleY(mUiScaleRate * mInteractiveScaleOffset);
+        mUserWebView.setScaleX(mUiScaleRate);
+        mUserWebView.setScaleY(mUiScaleRate);
         FrameLayout.LayoutParams webViewLayoutParams = (FrameLayout.LayoutParams)
                 mUserWebView.getLayoutParams();
         webViewLayoutParams.width = (int) (mDisplayShortLineLength / mUiScaleRate);
@@ -298,6 +297,7 @@ public class OverlayRootView extends FrameLayout {
             mOrientation = Configuration.ORIENTATION_PORTRAIT;
         }
     }
+
 
 
     /**
@@ -445,6 +445,17 @@ public class OverlayRootView extends FrameLayout {
      */
     public void requestCapture(UserWebView.OnScreenShotDoneCallback callback) {
         if (mUserWebView != null) {
+            mUserWebView.requestScreenShot(callback);
+        }
+    }
+
+    /**
+     * Request screen shot, after then reload automatically.
+     *
+     * @param callback
+     */
+    public void requestCaptureAndReload(UserWebView.OnScreenShotDoneCallback callback) {
+        if (mUserWebView != null) {
             mUserWebView.requestScreenShotAndReload(callback);
         }
     }
@@ -455,10 +466,6 @@ public class OverlayRootView extends FrameLayout {
     public void enableInteraction() {
         if (mUserWebView != null) {
             mUserWebView.enableInteraction();
-
-            // Update UI.
-            mInteractiveScaleOffset = 1.0f;
-            updateTotalUserInterface();
         }
     }
 
@@ -468,10 +475,6 @@ public class OverlayRootView extends FrameLayout {
     public void disableInteraction() {
         if (mUserWebView != null) {
             mUserWebView.disableInteraction();
-
-            // Update UI.
-            mInteractiveScaleOffset = 1.15f;
-            updateTotalUserInterface();
         }
     }
 
