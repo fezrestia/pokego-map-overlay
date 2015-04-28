@@ -8,8 +8,8 @@ android {
         applicationId "com.fezrestia.android.localcheckpointscheduler"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 3
-        versionName "0.03"
+        versionCode 4
+        versionName "0.04"
     }
     buildTypes {
         release {

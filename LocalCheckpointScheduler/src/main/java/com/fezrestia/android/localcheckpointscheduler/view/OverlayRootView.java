@@ -40,7 +40,8 @@ public class OverlayRootView extends FrameLayout {
     private UserWebView mUserWebView = null;
 
     // UI component.
-    private ImageView mHideButton = null;
+    private ImageView mCloseButton = null;
+    private ImageView mEdgeFrame = null;
     private TextView mClockIndicator = null;
 
     // Time.
@@ -131,6 +132,12 @@ public class OverlayRootView extends FrameLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         mUserWebViewContainer.addView(mUserWebView, webViewParams);
 
+        // Edge frame.
+        mEdgeFrame = new ImageView(getContext());
+        mEdgeFrame.setImageResource(R.drawable.overlay_edge_frame);
+        mEdgeFrame.setScaleType(ImageView.ScaleType.FIT_XY);
+        mUserWebViewContainer.addView(mEdgeFrame, webViewParams);
+
         // Clock.
         mClockIndicator = new TextView(getContext());
         int textColor = Color.rgb(235, 194, 62);
@@ -151,18 +158,16 @@ public class OverlayRootView extends FrameLayout {
         mUiWorker.postDelayed(mUpdateClockIndicatorTask, CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS);
 
         // Hide button.
-        mHideButton = new ImageView(getContext());
-        mHideButton.setOnTouchListener(mHideButtonOnTouchListenerImpl);
-        mHideButton.setBackgroundColor(Color.RED);
+        mCloseButton = new ImageView(getContext());
+        mCloseButton.setOnTouchListener(mHideButtonOnTouchListenerImpl);
+        mCloseButton.setImageResource(R.drawable.close_button);
         FrameLayout.LayoutParams hideButtonParams = new FrameLayout.LayoutParams(
-                150,
-                150);
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
         hideButtonParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
         hideButtonParams.rightMargin = 20;
         hideButtonParams.bottomMargin = 20;
-        addView(mHideButton, hideButtonParams);
-
-
+        addView(mCloseButton, hideButtonParams);
     }
 
     private void loadPreferences() {
@@ -206,10 +211,11 @@ public class OverlayRootView extends FrameLayout {
             mUserWebView.release();
             mUserWebView = null;
         }
+        mEdgeFrame = null;
         mUserWebViewContainer = null;
-        if (mHideButton != null) {
-            mHideButton.setOnTouchListener(null);
-            mHideButton = null;
+        if (mCloseButton != null) {
+            mCloseButton.setOnTouchListener(null);
+            mCloseButton = null;
         }
 
         setOnTouchListener(null);
@@ -256,6 +262,12 @@ public class OverlayRootView extends FrameLayout {
         webViewLayoutParams.height = (int) (mDisplayShortLineLength / mUiScaleRate);
         webViewLayoutParams.gravity = Gravity.CENTER;
         mUserWebView.setLayoutParams(webViewLayoutParams);
+
+        FrameLayout.LayoutParams edgeFrameLayoutParams = (FrameLayout.LayoutParams)
+                mEdgeFrame.getLayoutParams();
+        edgeFrameLayoutParams.width = mDisplayShortLineLength;
+        edgeFrameLayoutParams.height = mDisplayShortLineLength;
+        mEdgeFrame.setLayoutParams(edgeFrameLayoutParams);
     }
 
     /**
