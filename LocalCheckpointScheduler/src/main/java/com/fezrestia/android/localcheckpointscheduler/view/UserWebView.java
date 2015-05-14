@@ -1,15 +1,8 @@
 package com.fezrestia.android.localcheckpointscheduler.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Picture;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
@@ -19,7 +12,6 @@ import android.webkit.WebViewClient;
 import com.fezrestia.android.localcheckpointscheduler.util.Log;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,12 +29,6 @@ public class UserWebView extends WebView {
     // Background worker thread.
     private ExecutorService mBackWorker = null;
 
-    // Screen shot task.
-    private ScreenShotTask mScreenShotTask = null;
-
-    // Container view.
-    private View mContainer = null;
-
     // Is interactive mode or not.
     private boolean mIsInInteractiveMode = true;
 
@@ -52,8 +38,10 @@ public class UserWebView extends WebView {
     // JS done timeout.
     private static final int JS_DONE_TIMEOUT = 1000;
 
-    // JS file.
+    // Java Script -> Native Java interface.
     private static final String INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME = "jsni";
+
+    // JS file.
     private static final String JS_INGRESS_INTEL_HIDE_HEAD_UP_DISPLAY
             = "ingress_intel_hide_head_up_display.js";
     private ExecuteJsTask mLoadHideHudJsTask = null;
@@ -63,28 +51,29 @@ public class UserWebView extends WebView {
     private static final String JS_LOAD_CONTENT_HTML
             = "load_content_html.js";
     private ExecuteJsTask mLoadContentHtmlTask = null;
+    private static final String JS_INGRESS_INTEL_CHECK_LOADING_INDICATOR_VISIBILITY
+            = "ingress_intel_check_loading_indicator_visibility.js";
+    private ExecuteJsTask mLoadCheckLoadingIndicatorVisibilityTask = null;
 
-    private class JsIngressIntelHideHudCallback implements ValueCallback<String> {
+    private class JsExecutionCallback implements ValueCallback<String> {
         // Log tag.
-        private final String TAG = JsIngressIntelHideHudCallback.class.getSimpleName();
+        private final String TAG = JsExecutionCallback.class.getSimpleName();
+
         @Override
         public void onReceiveValue(String value) {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "onReceiveValue() : " + value);
+            // NOP.
         }
     }
 
+    // Reload task.
+    private ReloadTask mReloadTask = null;
 
-    /**
-     * Screen shot done callback interface.
-     */
-    public interface OnScreenShotDoneCallback {
-        /**
-         * Screen shot is done.
-         *
-         * @param pngBuffer
-         */
-        void onScreenShotDone(byte[] pngBuffer);
-    }
+    // Loading checker.
+    private CheckLoadingIndicatorVisibilityTask mLoadingChecker = null;
+
+    // Loading callback.
+    private LoadingStateCallback mLoadingStateCallback = null;
 
     /**
      * CONSTRUCTOR.
@@ -99,14 +88,9 @@ public class UserWebView extends WebView {
 
     /**
      * Initialize.
-     *
-     * @param parentView
      */
-    public void initialize(View parentView) {
-        setDrawingCacheEnabled(true);
-        setDrawingCacheQuality(DRAWING_CACHE_QUALITY_HIGH);
+    public void initialize() {
         setWebViewClient(mUserWebViewClient);
-        setPictureListener(mPictureListener);
 
         // Debug.
         setWebContentsDebuggingEnabled(true);
@@ -129,23 +113,29 @@ public class UserWebView extends WebView {
 
         addJavascriptInterface(mJSNI, INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME);
 
-        // Container.
-        mContainer = parentView;
-        mContainer.setDrawingCacheEnabled(true);
-        mContainer.setDrawingCacheQuality(DRAWING_CACHE_QUALITY_HIGH);
-
         // Java Script.
         String script;
         script = loadJs(JS_INGRESS_INTEL_HIDE_HEAD_UP_DISPLAY);
-        mLoadHideHudJsTask = new ExecuteJsTask(script);
+        mLoadHideHudJsTask = new ExecuteJsTask(script, new JsExecutionCallback());
         script = loadJs(JS_INGRESS_INTEL_SHOW_HEAD_UP_DISPLAY);
-        mLoadShowHudJsTask = new ExecuteJsTask(script);
+        mLoadShowHudJsTask = new ExecuteJsTask(script, new JsExecutionCallback());
         script = loadJs(JS_LOAD_CONTENT_HTML);
-        mLoadContentHtmlTask = new ExecuteJsTask(script);
+        mLoadContentHtmlTask = new ExecuteJsTask(script, new JsExecutionCallback());
+
+        // Loading checker.
+        mLoadingChecker = new CheckLoadingIndicatorVisibilityTask();
+        script = loadJs(JS_INGRESS_INTEL_CHECK_LOADING_INDICATOR_VISIBILITY);
+        mLoadCheckLoadingIndicatorVisibilityTask = new ExecuteJsTask(script, mLoadingChecker);
+
+        // Tasks.
+        mReloadTask = new ReloadTask();
 
         // Load.
         String intelUrl = INITIAL_LOAD_URL;
         loadUrl(intelUrl);
+
+        // Continuous check task.
+        mUiWorker.post(mLoadingChecker);
     }
 
     private String loadJs(String assetsName) {
@@ -169,6 +159,14 @@ public class UserWebView extends WebView {
         return script;
     }
 
+    /**
+     * Set loading state callback.
+     *
+     * @param callback
+     */
+    public void setLoadingStateCallback(LoadingStateCallback callback) {
+        mLoadingStateCallback = callback;
+    }
 
     /**
      * Release all references.
@@ -182,23 +180,32 @@ public class UserWebView extends WebView {
         setWebChromeClient(null);
         setPictureListener(null);
 
-        mContainer = null;
+        mLoadingStateCallback = null;
 
         if (mUiWorker != null) {
-            if (mScreenShotTask != null) {
-                mUiWorker.removeCallbacks(mScreenShotTask);
-            }
             if (mLoadHideHudJsTask != null) {
                 mUiWorker.removeCallbacks(mLoadHideHudJsTask);
+                mLoadHideHudJsTask = null;
             }
             if (mLoadShowHudJsTask != null) {
                 mUiWorker.removeCallbacks(mLoadShowHudJsTask);
+                mLoadShowHudJsTask = null;
             }
             if (mLoadContentHtmlTask != null) {
                 mUiWorker.removeCallbacks(mLoadContentHtmlTask);
+                mLoadContentHtmlTask = null;
+            }
+            if (mLoadCheckLoadingIndicatorVisibilityTask != null) {
+                mUiWorker.removeCallbacks(mLoadCheckLoadingIndicatorVisibilityTask);
+                mLoadCheckLoadingIndicatorVisibilityTask = null;
             }
             if (mReloadTask != null) {
                 mUiWorker.removeCallbacks(mReloadTask);
+                mReloadTask = null;
+            }
+            if (mLoadingChecker != null) {
+                mUiWorker.removeCallbacks(mLoadingChecker);
+                mLoadingChecker = null;
             }
             mUiWorker = null;
         }
@@ -219,7 +226,7 @@ public class UserWebView extends WebView {
         super.reload();
     }
 
-    private final ReloadTask mReloadTask = new ReloadTask();
+
     private class ReloadTask implements Runnable {
         @Override
         public void run() {
@@ -229,19 +236,22 @@ public class UserWebView extends WebView {
 
     private class ExecuteJsTask implements Runnable {
         private final String mScript;
+        private final ValueCallback mCallback;
 
         /**
          * CONSTRUCTOR.
          *
          * @param script
+         * @param callback
          */
-        public ExecuteJsTask(String script) {
+        public ExecuteJsTask(String script, ValueCallback callback) {
             mScript = script;
+            mCallback = callback;
         }
 
         @Override
         public void run() {
-            evaluateJavascript(mScript, new JsIngressIntelHideHudCallback());
+            evaluateJavascript(mScript, mCallback);
         }
     }
 
@@ -260,7 +270,7 @@ public class UserWebView extends WebView {
         @JavascriptInterface
         public final void onContentHtmlLoaded(final String htmlSrc) {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "onPageFinished()");
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "HTML = " + htmlSrc);
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "HTML = \n" + htmlSrc);
             // NOP.
         }
     }
@@ -285,165 +295,6 @@ public class UserWebView extends WebView {
             return true;
         }
     }
-
-    private final PictureListenerImpl mPictureListener = new PictureListenerImpl();
-    private class PictureListenerImpl implements WebView.PictureListener {
-        @Override
-        public void onNewPicture(WebView webView, Picture picture) {
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "onNewPicture() : E");
-            // NOP.
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "onNewPicture() : X");
-        }
-    }
-
-
-
-    private long currentTimestamp() {
-        return SystemClock.uptimeMillis();
-    }
-
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onCreateInputConnection() : E");
-        // NOP.
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onCreateInputConnection() : X");
-        return super.onCreateInputConnection(outAttrs);
-    }
-
-    @Override
-    public void onDraw(Canvas canvas) {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onDraw() : E");
-        // NOP.
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onDraw() : X");
-        super.onDraw(canvas);
-    }
-
-    /**
-     * Request to capture screen shot.
-     *
-     * @param callback
-     */
-    public void requestScreenShot(OnScreenShotDoneCallback callback) {
-        if (mScreenShotTask == null) {
-            // Start capture screen shot. Wait for hide HUD task done.
-            mScreenShotTask = new ScreenShotTask(callback);
-            mUiWorker.postDelayed(mScreenShotTask, JS_DONE_TIMEOUT);
-        } else {
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
-        }
-    }
-
-    /**
-     * Request to capture screen shot, after then, reload automatically.
-     *
-     * @param callback
-     */
-    public void requestScreenShotAndReload(OnScreenShotDoneCallback callback) {
-        if (mScreenShotTask == null) {
-            // Capture screen shot.
-            mScreenShotTask = new ScreenShotTask(callback);
-            mUiWorker.post(mScreenShotTask);
-
-            // Reload.
-            mUiWorker.postDelayed(mReloadTask, 1000); //TODO:Consider timeout millis.
-        } else {
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "requestCapture() : Error, already requested.");
-        }
-    }
-
-
-
-    private class ScreenShotTask implements Runnable {
-        // Log tag.
-        private final String TAG = ScreenShotTask.class.getSimpleName();
-
-        // Callback.
-        private final OnScreenShotDoneCallback mCallback;
-
-        /**
-         * CONSTRUCTOR.
-         *
-         * @param callback
-         */
-        public ScreenShotTask(OnScreenShotDoneCallback callback) {
-            mCallback = callback;
-        }
-
-        @Override
-        public void run() {
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : E");
-
-            // Create drawing cache.
-            buildDrawingCache();
-            mContainer.buildDrawingCache(true);
-            Bitmap bmp = Bitmap.createBitmap(mContainer.getDrawingCache(true));
-            destroyDrawingCache();
-            mContainer.destroyDrawingCache();
-
-            if (bmp == null) {
-                if (Log.IS_DEBUG) Log.logError(TAG, "Cache is NULL.");
-                // NOP.
-            } else {
-                if (Log.IS_DEBUG) Log.logDebug(TAG, "Cache is available.");
-
-                // Done successfully.
-                Runnable task = new Bmp2PngTask(bmp, mCallback);
-                mBackWorker.execute(task);
-
-                // Reset.
-                mScreenShotTask = null;
-            }
-
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : X");
-        }
-    }
-
-    private class Bmp2PngTask implements Runnable {
-        // Log tag.
-        private final String TAG = Bmp2PngTask.class.getSimpleName();
-
-        // Target bitmap.
-        private Bitmap mBitmap = null;
-
-        // Callback.
-        private final OnScreenShotDoneCallback mCallback;
-
-        /**
-         * CONSTRUCTOR.
-         *
-         * @param bmp
-         * @param callback
-         */
-        public Bmp2PngTask(Bitmap bmp, OnScreenShotDoneCallback callback) {
-            mBitmap = bmp;
-            mCallback = callback;
-        }
-
-        @Override
-        public void run() {
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : E");
-
-            // Cache is available.
-            byte[] pngBuffer = null;
-            try {
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                mBitmap.compress(Bitmap.CompressFormat.PNG, 95, os);
-                pngBuffer = os.toByteArray();
-                os.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            mBitmap.recycle();
-            mBitmap = null;
-
-            // Callback.
-            mCallback.onScreenShotDone(pngBuffer);
-
-            if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : X");
-        }
-    }
-
 
     /**
      * Enable interactive mode.
@@ -471,6 +322,56 @@ public class UserWebView extends WebView {
             return super.dispatchTouchEvent(event);
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Web  view loading state callback.
+     */
+    public interface LoadingStateCallback {
+        /**
+         * Web view is now on loading or not.
+         *
+         * @param isLoading
+         */
+        void onLoading(boolean isLoading);
+    }
+
+    private class CheckLoadingIndicatorVisibilityTask
+            implements
+                    Runnable,
+                    ValueCallback<String> {
+        // Log tag.
+        private final String TAG = CheckLoadingIndicatorVisibilityTask.class.getSimpleName();
+
+        // Check interval.
+        private final int CHECK_INTERVAL_MILLIS = 1000;
+
+        // Now on loading or not.
+        private boolean mIsLoading = true;
+
+        // Not loading display value.
+        private final String NOT_LOADING_DISPLAY_VALUE = "\"none\"";
+
+        @Override
+        public void run() {
+            if (mUiWorker != null && mLoadCheckLoadingIndicatorVisibilityTask != null) {
+                mUiWorker.post(mLoadCheckLoadingIndicatorVisibilityTask);
+                mUiWorker.postDelayed(this, CHECK_INTERVAL_MILLIS);
+            }
+        }
+
+        @Override
+        public void onReceiveValue(String value) {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "onReceiveValue() : " + value);
+
+            if (mLoadingStateCallback != null) {
+                if (NOT_LOADING_DISPLAY_VALUE.equals(value)) {
+                    mLoadingStateCallback.onLoading(false);
+                } else {
+                    mLoadingStateCallback.onLoading(true);
+                }
+            }
         }
     }
 

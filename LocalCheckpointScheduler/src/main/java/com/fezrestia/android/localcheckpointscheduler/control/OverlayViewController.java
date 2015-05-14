@@ -3,19 +3,15 @@ package com.fezrestia.android.localcheckpointscheduler.control;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 
 import com.fezrestia.android.localcheckpointscheduler.R;
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.UserApplication;
 import com.fezrestia.android.localcheckpointscheduler.service.OverlayViewService;
 import com.fezrestia.android.localcheckpointscheduler.storage.StorageController;
 import com.fezrestia.android.localcheckpointscheduler.util.Log;
 import com.fezrestia.android.localcheckpointscheduler.view.OverlayRootView;
-import com.fezrestia.android.localcheckpointscheduler.view.UserWebView;
 
 public class OverlayViewController {
     // Log tag.
@@ -42,8 +38,8 @@ public class OverlayViewController {
 
     // Cyclic screen shot interval.
     private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60; // 1 min.
-    // Web page reload timeout.
-    private static final int WEBVIEW_TIMEOUT_SEC = 1 * 60 * 60; // 60 min.
+    // Web page reload interval.
+    private static final int WEBVIEW_RELOAD_INTERVAL_SEC = 20 * 60; // 20 min.
 
     // Cyclic screen shot task.
     private CyclicScreenShotTask mCyclicScreenShotTask = null;
@@ -235,7 +231,8 @@ public class OverlayViewController {
 
 
 
-    private class OnScreenShotDoneCallbackImpl implements UserWebView.OnScreenShotDoneCallback {
+    private class OnScreenShotDoneCallbackImpl
+            implements OverlayRootView.OnScreenShotDoneCallback {
         private final String mDirName;
 
         /**
@@ -309,14 +306,14 @@ public class OverlayViewController {
         private int mCaptureCount = 0;
 
         // Callback.
-        private final UserWebView.OnScreenShotDoneCallback mCallback;
+        private final OverlayRootView.OnScreenShotDoneCallback mCallback;
 
         /**
          * CONSTRUCTOR.
          *
          * @param callback
          */
-        public CyclicScreenShotTask(UserWebView.OnScreenShotDoneCallback callback) {
+        public CyclicScreenShotTask(OverlayRootView.OnScreenShotDoneCallback callback) {
             mCallback = callback;
         }
 
@@ -325,27 +322,19 @@ public class OverlayViewController {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "run()");
 
             if (mRootView != null) {
-                // Capture and reload.
-                mRootView.requestCapture(mCallback);
-
                 // Count up.
                 ++mCaptureCount;
 
-                if ((WEBVIEW_TIMEOUT_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC) <= mCaptureCount) {
-                    // Capture count is maximum. Stop it.
-                    stopCyclicScreenShotTask();
+                // Reload required or not.
+                final int intervalCount
+                        = WEBVIEW_RELOAD_INTERVAL_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC;
+                final boolean isReloadRequired = mCaptureCount % intervalCount == 0;
 
-                    // Reset setting.
-                    SharedPreferences.Editor editor
-                            = UserApplication.getGlobalSharedPreferences().edit();
-                    editor.putBoolean(Constants.SP_KEY_CYCLE_RECORD_ENABLED, false);
-                    editor.apply();
-                    editor.commit();
+                // Capture and reload.
+                mRootView.requestCapture(isReloadRequired, mCallback);
 
-                } else {
-                    // Go to next capture.
-                    mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
-                }
+                // Go to next capture.
+                mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
             }
         }
     }

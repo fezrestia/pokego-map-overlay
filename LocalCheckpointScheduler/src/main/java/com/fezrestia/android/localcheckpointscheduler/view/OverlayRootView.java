@@ -3,7 +3,10 @@ package com.fezrestia.android.localcheckpointscheduler.view;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -25,8 +28,12 @@ import com.fezrestia.android.localcheckpointscheduler.UserApplication;
 import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
 import com.fezrestia.android.localcheckpointscheduler.util.Log;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class OverlayRootView extends FrameLayout {
     // Log tag.
@@ -39,10 +46,14 @@ public class OverlayRootView extends FrameLayout {
     private FrameLayout mUserWebViewContainer = null;
     private UserWebView mUserWebView = null;
 
-    // UI component.
-    private ImageView mCloseButton = null;
+    // HUD.
+    private FrameLayout mHudViewContainer = null;
     private ImageView mEdgeFrame = null;
     private TextView mClockIndicator = null;
+
+    // UI interaction.
+    private FrameLayout mInteractionViewContainer = null;
+    private ImageView mCloseButton = null;
 
     // Time.
     private static final SimpleDateFormat TIME_INDICATOR_SDF
@@ -76,6 +87,12 @@ public class OverlayRootView extends FrameLayout {
 
     // UI scale.
     private static final float mUiScaleRate = 0.5f;
+
+    // Screen shot generator.
+    private ScreenShotGenerator mScreenShotGenerator = null;
+
+    // Capture delay. e.g. waiting for java script execution done.
+    private static final int CAPTURE_DELAY_MILLIS = 1000;
 
     // CONSTRUCTOR.
     public OverlayRootView(final Context context) {
@@ -122,10 +139,14 @@ public class OverlayRootView extends FrameLayout {
     private void initializeInstances() {
         // Web view container.
         mUserWebViewContainer = (FrameLayout) findViewById(R.id.web_view_container);
+        // HUD view container.
+        mHudViewContainer = (FrameLayout) findViewById(R.id.hud_view_container);
+        // ITX view container.
+        mInteractionViewContainer = (FrameLayout) findViewById(R.id.interaction_view_container);
 
         // Web view.
         mUserWebView = new UserWebView(getContext());
-        mUserWebView.initialize(mUserWebViewContainer);
+        mUserWebView.initialize();
 
         ViewGroup.LayoutParams webViewParams = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -136,7 +157,7 @@ public class OverlayRootView extends FrameLayout {
         mEdgeFrame = new ImageView(getContext());
         mEdgeFrame.setImageResource(R.drawable.overlay_edge_frame);
         mEdgeFrame.setScaleType(ImageView.ScaleType.FIT_XY);
-        mUserWebViewContainer.addView(mEdgeFrame, webViewParams);
+        mHudViewContainer.addView(mEdgeFrame, webViewParams);
 
         // Clock.
         mClockIndicator = new TextView(getContext());
@@ -153,7 +174,7 @@ public class OverlayRootView extends FrameLayout {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         timeParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
-        mUserWebViewContainer.addView(mClockIndicator, timeParams);
+        mHudViewContainer.addView(mClockIndicator, timeParams);
         // Start clock.
         mUiWorker.postDelayed(mUpdateClockIndicatorTask, CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS);
 
@@ -167,7 +188,11 @@ public class OverlayRootView extends FrameLayout {
         hideButtonParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
         hideButtonParams.rightMargin = 20;
         hideButtonParams.bottomMargin = 20;
-        addView(mCloseButton, hideButtonParams);
+        mInteractionViewContainer.addView(mCloseButton, hideButtonParams);
+
+        // Screen shot generator.
+        mScreenShotGenerator = new ScreenShotGenerator(mUserWebViewContainer, mHudViewContainer);
+        mUserWebView.setLoadingStateCallback(mScreenShotGenerator);
     }
 
     private void loadPreferences() {
@@ -208,14 +233,21 @@ public class OverlayRootView extends FrameLayout {
         mUiWorker.removeCallbacks(mHideViewTask);
 
         if (mUserWebView != null) {
+            mUserWebView.setLoadingStateCallback(null);
             mUserWebView.release();
             mUserWebView = null;
         }
         mEdgeFrame = null;
         mUserWebViewContainer = null;
+        mHudViewContainer = null;
         if (mCloseButton != null) {
             mCloseButton.setOnTouchListener(null);
             mCloseButton = null;
+        }
+
+        if (mScreenShotGenerator != null) {
+            mScreenShotGenerator.release();
+            mScreenShotGenerator = null;
         }
 
         setOnTouchListener(null);
@@ -442,33 +474,44 @@ public class OverlayRootView extends FrameLayout {
 
 
     /**
-     * Request reload.
-     */
-    public void requestReload() {
-        if (mUserWebView != null) {
-            mUserWebView.reload();
-        }
-    }
-
-    /**
      * Request screen shot.
      *
+     * @param isReloadRequired
      * @param callback
      */
-    public void requestCapture(UserWebView.OnScreenShotDoneCallback callback) {
-        if (mUserWebView != null) {
-            mUserWebView.requestScreenShot(callback);
-        }
+    public void requestCapture(boolean isReloadRequired, OnScreenShotDoneCallback callback) {
+        disableInteraction();
+
+        Runnable task = new RequestStartScreenShotTask(isReloadRequired, callback);
+        mUiWorker.postDelayed(task, CAPTURE_DELAY_MILLIS);
     }
 
-    /**
-     * Request screen shot, after then reload automatically.
-     *
-     * @param callback
-     */
-    public void requestCaptureAndReload(UserWebView.OnScreenShotDoneCallback callback) {
-        if (mUserWebView != null) {
-            mUserWebView.requestScreenShotAndReload(callback);
+    private class RequestStartScreenShotTask implements Runnable {
+        // Reload is required.
+        private final boolean mIsReloadRequired;
+        // Callback.
+        private final OnScreenShotDoneCallback mCallback;
+
+        /**
+         * CONSTRUCTOR.
+         *
+         * @param isReloadRequired
+         * @param callback
+         */
+        RequestStartScreenShotTask(boolean isReloadRequired, OnScreenShotDoneCallback callback) {
+            mIsReloadRequired = isReloadRequired;
+            mCallback = callback;
+        }
+
+        @Override
+        public void run() {
+            if (mScreenShotGenerator != null) {
+                mScreenShotGenerator.request(mCallback);
+            }
+
+            if (mIsReloadRequired && mUserWebView != null) {
+                mUserWebView.reload();
+            }
         }
     }
 
@@ -560,6 +603,230 @@ public class OverlayRootView extends FrameLayout {
 //                "onSizeChanged() : [CUR=" + curW + "x" + curH + "] [NXT=" +  nxtW + "x" + nxtH + "]");
         super.onSizeChanged(curW, curH, nxtW, nxtH);
         // NOP.
+    }
+
+
+
+    /**
+     * Screen shot done callback interface.
+     */
+    public interface OnScreenShotDoneCallback {
+        /**
+         * Screen shot is done.
+         *
+         * @param pngBuffer
+         */
+        void onScreenShotDone(byte[] pngBuffer);
+    }
+
+    private static class ScreenShotGenerator implements UserWebView.LoadingStateCallback {
+        // Log tag.
+        private final String TAG = ScreenShotGenerator.class.getSimpleName();
+
+        // Back worker.
+        private ExecutorService mBackWorker = null;
+
+        // Web view container.
+        private View mWebView = null;
+        // Overlay HUD view.
+        private View mHudView = null;
+
+        // Web view layer screen shot.
+        private Bitmap mWebLayerBmp = null;
+        // Overlay HUD layer screen shot.
+        private Bitmap mHudLayerBmp = null;
+
+        // Client callback.
+        private OnScreenShotDoneCallback mCallback = null;
+
+        // Currently, web view is loading or not.
+        private boolean mIsWebViewOnLoading = false;
+
+        /**
+         * CONSTRUCTOR.
+         *
+         * @param webLayerLayout
+         * @param hudLayerLayout
+         */
+        ScreenShotGenerator(ViewGroup webLayerLayout, ViewGroup hudLayerLayout) {
+            mWebView = webLayerLayout;
+            mHudView = hudLayerLayout;
+
+            // Worker thread.
+            mBackWorker = Executors.newSingleThreadExecutor();
+        }
+
+        /**
+         * Release all references.
+         */
+        void release() {
+            mWebView = null;
+            mHudView = null;
+
+            if (mWebLayerBmp != null) {
+                if (!mWebLayerBmp.isRecycled()) {
+                    mWebLayerBmp.recycle();
+                }
+                mWebLayerBmp = null;
+            }
+            if (mHudLayerBmp != null) {
+                if (!mHudLayerBmp.isRecycled()) {
+                    mHudLayerBmp.recycle();
+                }
+                mHudLayerBmp = null;
+            }
+
+            if (mBackWorker != null && !mBackWorker.isShutdown()) {
+                mBackWorker.shutdown();
+                mBackWorker = null;
+            }
+        }
+
+        @Override
+        public void onLoading(boolean isLoading) {
+            mIsWebViewOnLoading = isLoading;
+        }
+
+        /**
+         * Request to generate latest valid screen shot.
+         *
+         * @param callback
+         * @return request is succeeded or not
+         */
+        boolean request(OnScreenShotDoneCallback callback) {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "request() : E");
+
+            boolean isSuccess = false;
+
+            // Check.
+            if (mCallback == null) {
+                // Do request.
+
+                mCallback = callback;
+
+                // Web view screen shot.
+                if (mWebLayerBmp == null || !mIsWebViewOnLoading) {
+                    // Release old bitmap before capture.
+                    if (mWebLayerBmp != null && !mWebLayerBmp.isRecycled()) {
+                        mWebLayerBmp.recycle();
+                    }
+
+                    // Get screen shot.
+                    mWebLayerBmp = getDrawingCache(mWebView);
+                } else {
+                    // 1st capture, or currently web view is loading.
+                    if (Log.IS_DEBUG) Log.logDebug(TAG, "Web view is now on loading.");
+                }
+
+                // HUD view screen shot.
+                // Release old bitmap before capture.
+                if (mHudLayerBmp != null && !mHudLayerBmp.isRecycled()) {
+                    mHudLayerBmp.recycle();
+                }
+
+                // Get screen shot.
+                mHudLayerBmp = getDrawingCache(mHudView);
+
+                // Fringe task.
+                FringeLayerTask fringeTask = new FringeLayerTask(mWebLayerBmp, mHudLayerBmp);
+                mBackWorker.execute(fringeTask);
+
+            } else {
+                // NOP. Currently, another request is processing.
+            }
+
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "request() : X");
+            return isSuccess;
+        }
+
+        private Bitmap getDrawingCache(View view) {
+            Bitmap screenShot;
+
+            // Generate drawable cache.
+            view.setDrawingCacheEnabled(true);
+            view.setDrawingCacheQuality(DRAWING_CACHE_QUALITY_HIGH);
+            view.buildDrawingCache(true);
+
+            // Capture.
+            screenShot = Bitmap.createBitmap(view.getDrawingCache(true));
+            view.destroyDrawingCache();
+
+            return screenShot;
+        }
+
+        private class FringeLayerTask implements Runnable {
+            private final Bitmap mBaseBmp;
+            private final Bitmap mOverlayBmp;
+
+            private final Paint mPaint;
+
+            /**
+             * CONSTRUCTOR.
+             *
+             * @param baseBmp
+             * @param overlayBmp
+             */
+            FringeLayerTask(Bitmap baseBmp, Bitmap overlayBmp) {
+                mBaseBmp = baseBmp;
+                mOverlayBmp = overlayBmp;
+                mPaint = new Paint();
+            }
+
+            @Override
+            public void run() {
+                Bitmap fringed = Bitmap.createBitmap(mBaseBmp);
+                Canvas c = new Canvas(fringed);
+                c.drawBitmap(mOverlayBmp, 0, 0, mPaint);
+
+                // Bitmap will be recycled in Bmp2PngTask.
+                Bmp2PngTask bmp2PngTask = new Bmp2PngTask(fringed);
+                mBackWorker.execute(bmp2PngTask);
+            }
+        }
+
+        private class Bmp2PngTask implements Runnable {
+            // Log tag.
+            private final String TAG = Bmp2PngTask.class.getSimpleName();
+
+            // Target bitmap.
+            private Bitmap mBitmap = null;
+
+            /**
+             * CONSTRUCTOR.
+             *
+             * @param bmp
+             */
+            public Bmp2PngTask(Bitmap bmp) {
+                mBitmap = bmp;
+            }
+
+            @Override
+            public void run() {
+                if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : E");
+
+                // Cache is available.
+                byte[] pngBuffer = null;
+                try {
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    mBitmap.compress(Bitmap.CompressFormat.PNG, 95, os);
+                    pngBuffer = os.toByteArray();
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                mBitmap.recycle();
+                mBitmap = null;
+
+                // Callback.
+                mCallback.onScreenShotDone(pngBuffer);
+
+                // Reset.
+                mCallback = null;
+
+                if (Log.IS_DEBUG) Log.logDebug(TAG, "run() : X");
+            }
+        }
     }
 
 

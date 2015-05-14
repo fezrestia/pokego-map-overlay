@@ -14,4 +14,18 @@
     >
     </FrameLayout>
 
+    <FrameLayout
+            android:id="@+id/hud_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+    >
+    </FrameLayout>
+
+    <FrameLayout
+            android:id="@+id/interaction_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+    >
+    </FrameLayout>
+
 </com.fezrestia.android.localcheckpointscheduler.view.OverlayRootView>
