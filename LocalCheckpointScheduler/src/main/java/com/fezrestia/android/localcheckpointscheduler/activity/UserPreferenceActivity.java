@@ -20,6 +20,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
     // Preference.
     private Preference mOverlayEnDis = null;
     private Preference mCycleRecordEnDis = null;
+    private Preference mLoadingDetectEnDis = null;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -47,6 +48,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
         mCycleRecordEnDis = findPreference(Constants.SP_KEY_CYCLE_RECORD_ENABLED);
         mCycleRecordEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
         bindPreference(mCycleRecordEnDis);
+        // Loading state enabled or not.
+        mLoadingDetectEnDis = findPreference(Constants.SP_KEY_LOADING_DETECT_ENABLED);
+        mLoadingDetectEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mLoadingDetectEnDis);
     }
 
     @Override
@@ -137,6 +142,15 @@ public class UserPreferenceActivity extends PreferenceActivity {
                     }
                     break;
 
+                case Constants.SP_KEY_LOADING_DETECT_ENABLED:
+                    {
+                        final boolean isChecked = ((Boolean) value).booleanValue();
+
+                        // Update property.
+                        OverlayViewController.getInstance().setLoadingDetectEnabled(isChecked);
+                    }
+                    break;
+
                 default:
                     throw new IllegalArgumentException();
             }
@@ -164,6 +178,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
                 if (!isOverlayEnabled) {
                     preference.setEnabled(false);
                 }
+                break;
+
+            case Constants.SP_KEY_LOADING_DETECT_ENABLED:
+                // NOP.
                 break;
 
             default:

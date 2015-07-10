@@ -516,6 +516,15 @@ public class OverlayRootView extends FrameLayout {
     }
 
     /**
+     * Set loading state detection enabled or not.
+     *
+     * @param isEnabled
+     */
+    public void setLoadingDetectEnabled(boolean isEnabled) {
+        mScreenShotGenerator.setLoadingDetectEnabled(isEnabled);
+    }
+
+    /**
      * Enable interaction with this view.
      */
     public void enableInteraction() {
@@ -642,6 +651,9 @@ public class OverlayRootView extends FrameLayout {
         // Currently, web view is loading or not.
         private boolean mIsWebViewOnLoading = false;
 
+        // Loading state detection is enabled or not.
+        private boolean mIsLoadingDetectEnabled = false;
+
         /**
          * CONSTRUCTOR.
          *
@@ -688,6 +700,29 @@ public class OverlayRootView extends FrameLayout {
         }
 
         /**
+         * Set loading state detection enabled or not.
+         *
+         * @param isEnabled
+         */
+        public void setLoadingDetectEnabled(boolean isEnabled) {
+            mIsLoadingDetectEnabled = isEnabled;
+        }
+
+        private boolean canCaptureScreenShot() {
+            if (mIsLoadingDetectEnabled) {
+                // Loading state is checked.
+                if (mIsWebViewOnLoading) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                // Loading state is ignored.
+                return true;
+            }
+        }
+
+        /**
          * Request to generate latest valid screen shot.
          *
          * @param callback
@@ -705,7 +740,7 @@ public class OverlayRootView extends FrameLayout {
                 mCallback = callback;
 
                 // Web view screen shot.
-                if (mWebLayerBmp == null || !mIsWebViewOnLoading) {
+                if (mWebLayerBmp == null || canCaptureScreenShot()) {
                     // Release old bitmap before capture.
                     if (mWebLayerBmp != null && !mWebLayerBmp.isRecycled()) {
                         mWebLayerBmp.recycle();

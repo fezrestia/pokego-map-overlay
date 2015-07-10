@@ -40,9 +40,14 @@ public class OverlayViewController {
     private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60; // 1 min.
     // Web page reload interval.
     private static final int WEBVIEW_RELOAD_INTERVAL_SEC = 20 * 60; // 20 min.
+    // Start recording delay time.
+    private static final int START_REC_DELAYED_TIME_MILLIS = 5000; // 5 sec.
 
     // Cyclic screen shot task.
     private CyclicScreenShotTask mCyclicScreenShotTask = null;
+
+    // Loading state detection is enabled or not.
+    private boolean mIsLoadingDetectEnabled = false;
 
     /**
      * Life cycle trigger interface.
@@ -157,6 +162,7 @@ public class OverlayViewController {
         mRootView = (OverlayRootView)
                 LayoutInflater.from(context).inflate(R.layout.overlay_root_view, null);
         mRootView.initialize();
+        mRootView.setLoadingDetectEnabled(mIsLoadingDetectEnabled);
 
         // Add to window.
         mRootView.addToOverlayWindow();
@@ -279,7 +285,7 @@ public class OverlayViewController {
         // Start.
         mCyclicScreenShotTask = new CyclicScreenShotTask(
                 new OnScreenShotDoneCallbackImpl(mCurrentRootDirName));
-        mUiWorker.post(mCyclicScreenShotTask);
+        mUiWorker.postDelayed(mCyclicScreenShotTask, START_REC_DELAYED_TIME_MILLIS);
     }
 
     /**
@@ -326,9 +332,10 @@ public class OverlayViewController {
                 ++mCaptureCount;
 
                 // Reload required or not.
-                final int intervalCount
-                        = WEBVIEW_RELOAD_INTERVAL_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC;
-                final boolean isReloadRequired = mCaptureCount % intervalCount == 0;
+//                final int intervalCount
+//                        = WEBVIEW_RELOAD_INTERVAL_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC;
+//                final boolean isReloadRequired = mCaptureCount % intervalCount == 0;
+                boolean isReloadRequired = false;
 
                 // Capture and reload.
                 mRootView.requestCapture(isReloadRequired, mCallback);
@@ -339,6 +346,15 @@ public class OverlayViewController {
         }
     }
 
-
-
+    /**
+     * Set loading state detection enabled or not.
+     *
+     * @param isEnabled
+     */
+    public void setLoadingDetectEnabled(boolean isEnabled) {
+        mIsLoadingDetectEnabled = isEnabled;
+        if (mRootView != null) {
+            mRootView.setLoadingDetectEnabled(mIsLoadingDetectEnabled);
+        }
+    }
 }
