@@ -54,6 +54,9 @@ public class UserWebView extends WebView {
     private static final String JS_INGRESS_INTEL_CHECK_LOADING_INDICATOR_VISIBILITY
             = "ingress_intel_check_loading_indicator_visibility.js";
     private ExecuteJsTask mLoadCheckLoadingIndicatorVisibilityTask = null;
+    private static final String JS_INGRESS_INTEL_HIDE_REFRESH_TOAST
+            = "ingress_intel_hide_refresh_toast.js";
+    private ExecuteJsTask mLoadHideRefreshToastTask = null;
 
     private class JsExecutionCallback implements ValueCallback<String> {
         // Log tag.
@@ -121,6 +124,8 @@ public class UserWebView extends WebView {
         mLoadShowHudJsTask = new ExecuteJsTask(script, new JsExecutionCallback());
         script = loadJs(JS_LOAD_CONTENT_HTML);
         mLoadContentHtmlTask = new ExecuteJsTask(script, new JsExecutionCallback());
+        script = loadJs(JS_INGRESS_INTEL_HIDE_REFRESH_TOAST);
+        mLoadHideRefreshToastTask = new ExecuteJsTask(script, new JsExecutionCallback());
 
         // Loading checker.
         mLoadingChecker = new CheckLoadingIndicatorVisibilityTask();
@@ -198,6 +203,10 @@ public class UserWebView extends WebView {
             if (mLoadCheckLoadingIndicatorVisibilityTask != null) {
                 mUiWorker.removeCallbacks(mLoadCheckLoadingIndicatorVisibilityTask);
                 mLoadCheckLoadingIndicatorVisibilityTask = null;
+            }
+            if (mLoadHideRefreshToastTask != null) {
+                mUiWorker.removeCallbacks(mLoadHideRefreshToastTask);
+                mLoadHideRefreshToastTask = null;
             }
             if (mReloadTask != null) {
                 mUiWorker.removeCallbacks(mReloadTask);
@@ -314,6 +323,8 @@ public class UserWebView extends WebView {
 
         // Hide HUD.
         mUiWorker.post(mLoadHideHudJsTask);
+        // Hide refresh toast.
+        mUiWorker.post(mLoadHideRefreshToastTask);
     }
 
     @Override
