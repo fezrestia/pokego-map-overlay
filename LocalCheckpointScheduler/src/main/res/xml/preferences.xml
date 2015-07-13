@@ -24,9 +24,9 @@
             android:title="Property"
     >
         <CheckBoxPreference
-            android:key="is_loading_detect_enabled"
-            android:title="Enable loading detection"
-            android:summary="Do not capture screen shot during loading page."
+            android:key="is_always_reload_enabled"
+            android:title="Enable always reload"
+            android:summary="Reload after screen-shot or not."
         />
     </PreferenceCategory>
 

@@ -60,8 +60,15 @@ public class OverlayViewService extends Service {
                 ONGOING_NOTIFICATION_ID,
                 notification);
 
+        // Load property.
+        boolean isAlwaysReloadEnabled = intent.getExtras().getBoolean(
+                Constants.SP_KEY_ALWAYS_RELOAD_ENABLED,
+                false);
+
         // Start overlay view finder.
-        OverlayViewController.getInstance().start(OverlayViewService.this);
+        OverlayViewController.getInstance().start(
+                OverlayViewService.this,
+                isAlwaysReloadEnabled);
         OverlayViewController.getInstance().resume();
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onStartCommand() : X");

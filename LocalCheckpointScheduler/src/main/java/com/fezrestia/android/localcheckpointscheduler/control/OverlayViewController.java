@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 
+import com.fezrestia.android.localcheckpointscheduler.Constants;
 import com.fezrestia.android.localcheckpointscheduler.R;
 import com.fezrestia.android.localcheckpointscheduler.service.OverlayViewService;
 import com.fezrestia.android.localcheckpointscheduler.storage.StorageController;
@@ -38,16 +39,14 @@ public class OverlayViewController {
 
     // Cyclic screen shot interval.
     private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60; // 1 min.
-    // Web page reload interval.
-    private static final int WEBVIEW_RELOAD_INTERVAL_SEC = 20 * 60; // 20 min.
     // Start recording delay time.
     private static final int START_REC_DELAYED_TIME_MILLIS = 5000; // 5 sec.
 
     // Cyclic screen shot task.
     private CyclicScreenShotTask mCyclicScreenShotTask = null;
 
-    // Loading state detection is enabled or not.
-    private boolean mIsLoadingDetectEnabled = false;
+    // Always reload after capture screen shot.
+    private boolean mIsAlwaysReloadEnabled = false;
 
     /**
      * Life cycle trigger interface.
@@ -77,9 +76,11 @@ public class OverlayViewController {
          * Start.
          *
          * @param context
+         * @param isAlwaysReloadEnabled
          */
-        public void requestStart(Context context) {
+        public void requestStart(Context context, boolean isAlwaysReloadEnabled) {
             Intent service = new Intent(context, OverlayViewService.class);
+            service.putExtra(Constants.SP_KEY_ALWAYS_RELOAD_ENABLED, isAlwaysReloadEnabled);
             ComponentName component = context.startService(service);
 
             // Wake lock.
@@ -139,8 +140,9 @@ public class OverlayViewController {
      * Start overlay view finder.
      *
      * @param context
+     * @param isAlwaysReloadEnabled
      */
-    public void start(Context context) {
+    public void start(Context context, boolean isAlwaysReloadEnabled) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "start() : E");
 
         if (mRootView != null) {
@@ -152,6 +154,9 @@ public class OverlayViewController {
         // Cache master context.
         mContext = context;
 
+        // Flag.
+        mIsAlwaysReloadEnabled = isAlwaysReloadEnabled;
+
         // Load preferences.
         loadPreferences();
 
@@ -161,8 +166,7 @@ public class OverlayViewController {
         // Create overlay view.
         mRootView = (OverlayRootView)
                 LayoutInflater.from(context).inflate(R.layout.overlay_root_view, null);
-        mRootView.initialize();
-        mRootView.setLoadingDetectEnabled(mIsLoadingDetectEnabled);
+        mRootView.initialize(false); //TODO:Impl loading detection
 
         // Add to window.
         mRootView.addToOverlayWindow();
@@ -331,30 +335,12 @@ public class OverlayViewController {
                 // Count up.
                 ++mCaptureCount;
 
-                // Reload required or not.
-//                final int intervalCount
-//                        = WEBVIEW_RELOAD_INTERVAL_SEC / CYCLIC_SCREEN_SHOT_INTERVAL_SEC;
-//                final boolean isReloadRequired = mCaptureCount % intervalCount == 0;
-                boolean isReloadRequired = false;
-
                 // Capture and reload.
-                mRootView.requestCapture(isReloadRequired, mCallback);
+                mRootView.requestCapture(mIsAlwaysReloadEnabled, mCallback);
 
                 // Go to next capture.
                 mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
             }
-        }
-    }
-
-    /**
-     * Set loading state detection enabled or not.
-     *
-     * @param isEnabled
-     */
-    public void setLoadingDetectEnabled(boolean isEnabled) {
-        mIsLoadingDetectEnabled = isEnabled;
-        if (mRootView != null) {
-            mRootView.setLoadingDetectEnabled(mIsLoadingDetectEnabled);
         }
     }
 }

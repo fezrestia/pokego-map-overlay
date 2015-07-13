@@ -92,7 +92,7 @@ public class OverlayRootView extends FrameLayout {
     private ScreenShotGenerator mScreenShotGenerator = null;
 
     // Capture delay. e.g. waiting for java script execution done.
-    private static final int CAPTURE_DELAY_MILLIS = 1000;
+    private static final int CAPTURE_DELAY_MILLIS = 5000;
 
     // CONSTRUCTOR.
     public OverlayRootView(final Context context) {
@@ -117,12 +117,14 @@ public class OverlayRootView extends FrameLayout {
 
     /**
      * Initialize all of configurations.
+     *
+     * @param isLoadingDetectionEnabled
      */
-    public void initialize() {
+    public void initialize(boolean isLoadingDetectionEnabled) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "initialize() : E");
 
         // Cache instance references.
-        initializeInstances();
+        initializeInstances(isLoadingDetectionEnabled);
 
         // Load setting.
         loadPreferences();
@@ -136,7 +138,7 @@ public class OverlayRootView extends FrameLayout {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "initialize() : X");
     }
 
-    private void initializeInstances() {
+    private void initializeInstances(boolean isLoadingDetectionEnabled) {
         // Web view container.
         mUserWebViewContainer = (FrameLayout) findViewById(R.id.web_view_container);
         // HUD view container.
@@ -191,7 +193,10 @@ public class OverlayRootView extends FrameLayout {
         mInteractionViewContainer.addView(mCloseButton, hideButtonParams);
 
         // Screen shot generator.
-        mScreenShotGenerator = new ScreenShotGenerator(mUserWebViewContainer, mHudViewContainer);
+        mScreenShotGenerator = new ScreenShotGenerator(
+                mUserWebViewContainer,
+                mHudViewContainer,
+                isLoadingDetectionEnabled);
         mUserWebView.setLoadingStateCallback(mScreenShotGenerator);
     }
 
@@ -516,15 +521,6 @@ public class OverlayRootView extends FrameLayout {
     }
 
     /**
-     * Set loading state detection enabled or not.
-     *
-     * @param isEnabled
-     */
-    public void setLoadingDetectEnabled(boolean isEnabled) {
-        mScreenShotGenerator.setLoadingDetectEnabled(isEnabled);
-    }
-
-    /**
      * Enable interaction with this view.
      */
     public void enableInteraction() {
@@ -651,18 +647,24 @@ public class OverlayRootView extends FrameLayout {
         // Currently, web view is loading or not.
         private boolean mIsWebViewOnLoading = false;
 
-        // Loading state detection is enabled or not.
-        private boolean mIsLoadingDetectEnabled = false;
+        // Loading detection enabled or not.
+        private boolean mIsLoadingDetectionEnabled = false;
 
         /**
          * CONSTRUCTOR.
          *
          * @param webLayerLayout
          * @param hudLayerLayout
+         * @param isLoadingDetectionEnabled
          */
-        ScreenShotGenerator(ViewGroup webLayerLayout, ViewGroup hudLayerLayout) {
+        ScreenShotGenerator(
+                ViewGroup webLayerLayout,
+                ViewGroup hudLayerLayout,
+                boolean isLoadingDetectionEnabled) {
             mWebView = webLayerLayout;
             mHudView = hudLayerLayout;
+
+            mIsLoadingDetectionEnabled = isLoadingDetectionEnabled;
 
             // Worker thread.
             mBackWorker = Executors.newSingleThreadExecutor();
@@ -699,17 +701,8 @@ public class OverlayRootView extends FrameLayout {
             mIsWebViewOnLoading = isLoading;
         }
 
-        /**
-         * Set loading state detection enabled or not.
-         *
-         * @param isEnabled
-         */
-        public void setLoadingDetectEnabled(boolean isEnabled) {
-            mIsLoadingDetectEnabled = isEnabled;
-        }
-
         private boolean canCaptureScreenShot() {
-            if (mIsLoadingDetectEnabled) {
+            if (mIsLoadingDetectionEnabled) {
                 // Loading state is checked.
                 if (mIsWebViewOnLoading) {
                     return false;

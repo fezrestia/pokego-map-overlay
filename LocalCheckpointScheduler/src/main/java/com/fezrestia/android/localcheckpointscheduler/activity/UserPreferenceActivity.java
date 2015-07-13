@@ -20,7 +20,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
     // Preference.
     private Preference mOverlayEnDis = null;
     private Preference mCycleRecordEnDis = null;
-    private Preference mLoadingDetectEnDis = null;
+    private Preference mAlwaysReloadEnDis = null;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -48,10 +48,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
         mCycleRecordEnDis = findPreference(Constants.SP_KEY_CYCLE_RECORD_ENABLED);
         mCycleRecordEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
         bindPreference(mCycleRecordEnDis);
-        // Loading state enabled or not.
-        mLoadingDetectEnDis = findPreference(Constants.SP_KEY_LOADING_DETECT_ENABLED);
-        mLoadingDetectEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
-        bindPreference(mLoadingDetectEnDis);
+        // Always reload after capture or not.
+        mAlwaysReloadEnDis = findPreference(Constants.SP_KEY_ALWAYS_RELOAD_ENABLED);
+        mAlwaysReloadEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mAlwaysReloadEnDis);
     }
 
     @Override
@@ -99,7 +99,9 @@ public class UserPreferenceActivity extends PreferenceActivity {
 
                             // Start overlay.
                             OverlayViewController.LifeCycleTrigger.getInstance()
-                                    .requestStart(getApplicationContext());
+                                    .requestStart(
+                                            getApplicationContext(),
+                                            ((CheckBoxPreference) mAlwaysReloadEnDis).isChecked());
                         } else {
                             // Update UI.
                             mCycleRecordEnDis.setEnabled(false);
@@ -120,8 +122,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
                             mOverlayEnDis.setEnabled(false);
 
                             // Show overlay view.
-                            OverlayViewController.LifeCycleTrigger.getInstance()
-                                    .requestStart(getApplicationContext());
+                            OverlayViewController.getInstance().resume();
 
                             // Start recording.
                             OverlayViewController.getInstance().startCyclicScreenShotTask();
@@ -136,18 +137,14 @@ public class UserPreferenceActivity extends PreferenceActivity {
                             OverlayViewController.getInstance().stopCyclicScreenShotTask();
 
                             // Show overlay view.
-                            OverlayViewController.LifeCycleTrigger.getInstance()
-                                    .requestStart(getApplicationContext());
+                            OverlayViewController.getInstance().resume();
                         }
                     }
                     break;
 
-                case Constants.SP_KEY_LOADING_DETECT_ENABLED:
+                case Constants.SP_KEY_ALWAYS_RELOAD_ENABLED:
                     {
-                        final boolean isChecked = ((Boolean) value).booleanValue();
-
-                        // Update property.
-                        OverlayViewController.getInstance().setLoadingDetectEnabled(isChecked);
+                        // NOP.
                     }
                     break;
 
@@ -180,8 +177,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
                 }
                 break;
 
-            case Constants.SP_KEY_LOADING_DETECT_ENABLED:
-                // NOP.
+            case Constants.SP_KEY_ALWAYS_RELOAD_ENABLED:
+                boolean isAlwaysReloadEnabled = UserApplication.getGlobalSharedPreferences()
+                        .getBoolean(Constants.SP_KEY_ALWAYS_RELOAD_ENABLED, false);
+                ((CheckBoxPreference) preference).setChecked(isAlwaysReloadEnabled);
                 break;
 
             default:
