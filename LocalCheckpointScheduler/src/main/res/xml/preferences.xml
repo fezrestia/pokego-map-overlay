@@ -8,15 +8,15 @@
             android:title="Overlay View"
     >
         <CheckBoxPreference
-            android:key="is_overlay_view_enabled"
-            android:title="Enable overlay view"
-            android:summary="Overlay view is en/disable"
+                android:key="is_overlay_view_enabled"
+                android:title="Enable overlay view"
+                android:summary="Overlay view is en/disable"
         />
 
         <CheckBoxPreference
-            android:key="is_cycle_record_enabled"
-            android:title="Enable cycle record"
-            android:summary="Current cycle record is en/disable"
+                android:key="is_cycle_record_enabled"
+                android:title="Enable cycle record"
+                android:summary="Current cycle record is en/disable"
         />
     </PreferenceCategory>
 
@@ -24,10 +24,19 @@
             android:title="Property"
     >
         <CheckBoxPreference
-            android:key="is_always_reload_enabled"
-            android:title="Enable always reload"
-            android:summary="Reload after screen-shot or not."
+                android:key="is_always_reload_enabled"
+                android:title="Enable always reload"
+                android:summary="Reload after screen-shot or not."
         />
+
+        <ListPreference
+                android:key="capture_interval_min"
+                android:title="Capture interval min."
+                android:summary="Capture interval."
+                android:entries="@array/capture_interval_min_list_entries"
+                android:entryValues="@array/capture_interval_min_list_values"
+        />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

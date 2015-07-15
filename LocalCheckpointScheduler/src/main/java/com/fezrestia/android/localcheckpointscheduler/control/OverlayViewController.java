@@ -37,8 +37,6 @@ public class OverlayViewController {
     // Screen shot set dir name pre-fix.
     private static final String SET_DIR_NAME_PREFIX = "SET_";
 
-    // Cyclic screen shot interval.
-    private static final int CYCLIC_SCREEN_SHOT_INTERVAL_SEC = 60; // 1 min.
     // Start recording delay time.
     private static final int START_REC_DELAYED_TIME_MILLIS = 5000; // 5 sec.
 
@@ -268,8 +266,10 @@ public class OverlayViewController {
 
     /**
      * Start cyclic screen shot task.
+     *
+     * @param intervalMin
      */
-    public void startCyclicScreenShotTask() {
+    public void startCyclicScreenShotTask(int intervalMin) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "startCyclicScreenShotTask()");
 
         // Check.
@@ -288,6 +288,7 @@ public class OverlayViewController {
 
         // Start.
         mCyclicScreenShotTask = new CyclicScreenShotTask(
+                intervalMin,
                 new OnScreenShotDoneCallbackImpl(mCurrentRootDirName));
         mUiWorker.postDelayed(mCyclicScreenShotTask, START_REC_DELAYED_TIME_MILLIS);
     }
@@ -318,12 +319,19 @@ public class OverlayViewController {
         // Callback.
         private final OverlayRootView.OnScreenShotDoneCallback mCallback;
 
+        // Screen shot interval min.
+        private final int mScreenShotIntervalMin;
+
         /**
          * CONSTRUCTOR.
          *
+         * @param intervalMin
          * @param callback
          */
-        public CyclicScreenShotTask(OverlayRootView.OnScreenShotDoneCallback callback) {
+        public CyclicScreenShotTask(
+                int screenShotIntervalMin,
+                OverlayRootView.OnScreenShotDoneCallback callback) {
+            mScreenShotIntervalMin = screenShotIntervalMin;
             mCallback = callback;
         }
 
@@ -339,7 +347,7 @@ public class OverlayViewController {
                 mRootView.requestCapture(mIsAlwaysReloadEnabled, mCallback);
 
                 // Go to next capture.
-                mUiWorker.postDelayed(this, CYCLIC_SCREEN_SHOT_INTERVAL_SEC * 1000);
+                mUiWorker.postDelayed(this, mScreenShotIntervalMin * 60 * 1000);
             }
         }
     }

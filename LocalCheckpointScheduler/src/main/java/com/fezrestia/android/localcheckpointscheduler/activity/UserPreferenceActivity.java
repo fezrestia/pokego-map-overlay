@@ -21,6 +21,11 @@ public class UserPreferenceActivity extends PreferenceActivity {
     private Preference mOverlayEnDis = null;
     private Preference mCycleRecordEnDis = null;
     private Preference mAlwaysReloadEnDis = null;
+    private Preference mReloadIntervalSetting = null;
+
+    // Setting value.
+    private boolean mIsAlwaysReload = false;
+    private int mScreenShotIntervalMin = Constants.DEFAULT_CAPTURE_INTERVAL_MIN;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -52,6 +57,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
         mAlwaysReloadEnDis = findPreference(Constants.SP_KEY_ALWAYS_RELOAD_ENABLED);
         mAlwaysReloadEnDis.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
         bindPreference(mAlwaysReloadEnDis);
+        // Reload interval setting.
+        mReloadIntervalSetting = findPreference(Constants.SP_KEY_CAPTURE_INTERVAL_MIN);
+        mReloadIntervalSetting.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mReloadIntervalSetting);
     }
 
     @Override
@@ -99,9 +108,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
 
                             // Start overlay.
                             OverlayViewController.LifeCycleTrigger.getInstance()
-                                    .requestStart(
-                                            getApplicationContext(),
-                                            ((CheckBoxPreference) mAlwaysReloadEnDis).isChecked());
+                                    .requestStart(getApplicationContext(), mIsAlwaysReload);
                         } else {
                             // Update UI.
                             mCycleRecordEnDis.setEnabled(false);
@@ -125,8 +132,8 @@ public class UserPreferenceActivity extends PreferenceActivity {
                             OverlayViewController.getInstance().resume();
 
                             // Start recording.
-                            OverlayViewController.getInstance().startCyclicScreenShotTask();
-
+                            OverlayViewController.getInstance().startCyclicScreenShotTask(
+                                    mScreenShotIntervalMin);
                             // Finish own self.
                             UserPreferenceActivity.this.finish();
                         } else {
@@ -145,6 +152,12 @@ public class UserPreferenceActivity extends PreferenceActivity {
                 case Constants.SP_KEY_ALWAYS_RELOAD_ENABLED:
                     {
                         // NOP.
+                    }
+                    break;
+
+                case Constants.SP_KEY_CAPTURE_INTERVAL_MIN:
+                    {
+                        mScreenShotIntervalMin = Integer.parseInt(stringValue);
                     }
                     break;
 
@@ -181,22 +194,18 @@ public class UserPreferenceActivity extends PreferenceActivity {
                 boolean isAlwaysReloadEnabled = UserApplication.getGlobalSharedPreferences()
                         .getBoolean(Constants.SP_KEY_ALWAYS_RELOAD_ENABLED, false);
                 ((CheckBoxPreference) preference).setChecked(isAlwaysReloadEnabled);
+                mIsAlwaysReload = isAlwaysReloadEnabled;
                 break;
+
+            case Constants.SP_KEY_CAPTURE_INTERVAL_MIN:
+                String captureIntervalString = UserApplication.getGlobalSharedPreferences()
+                        .getString(Constants.SP_KEY_CAPTURE_INTERVAL_MIN, String.valueOf(Constants.DEFAULT_CAPTURE_INTERVAL_MIN));
+                mScreenShotIntervalMin = Integer.parseInt(captureIntervalString);
+                break;
+
 
             default:
                 throw new IllegalArgumentException();
-
-
-            // List
-        // Set the listener to watch for value changes.
-//        preference.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
-//
-//        mOnPreferenceChangeListener.onPreferenceChange(
-//                preference,
-//                PreferenceManager
-//                        .getDefaultSharedPreferences(preference.getContext())
-//                        .getString(preference.getKey(), ""));
-
         }
     }
 }

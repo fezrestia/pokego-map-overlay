@@ -13,11 +13,14 @@ public class Constants {
     public static final String SP_KEY_CYCLE_RECORD_ENABLED = "is_cycle_record_enabled";
     /** SP Key, loading state detection en/disable. */
     public static final String SP_KEY_ALWAYS_RELOAD_ENABLED = "is_always_reload_enabled";
+    /** SP Key, reload interval min. */
+    public static final String SP_KEY_CAPTURE_INTERVAL_MIN = "capture_interval_min";
 
     /** Font file name. */
     public static final String FONT_FILENAME_CODA = "Coda/Coda-Regular.ttf";
 
-
+    /** Capture interval default. */
+    public static final int DEFAULT_CAPTURE_INTERVAL_MIN = 1;
 
 
 

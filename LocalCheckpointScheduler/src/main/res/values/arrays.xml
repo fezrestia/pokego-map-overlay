@@ -1,0 +1,21 @@
+<resources>
+
+    <string-array
+            name="capture_interval_min_list_entries"
+    >
+        <item>1 min.</item>
+        <item>3 min.</item>
+        <item>5 min.</item>
+        <item>10 min.</item>
+    </string-array>
+
+    <string-array
+            name="capture_interval_min_list_values"
+    >
+        <item>1</item>
+        <item>3</item>
+        <item>5</item>
+        <item>10</item>
+    </string-array>
+
+</resources>
