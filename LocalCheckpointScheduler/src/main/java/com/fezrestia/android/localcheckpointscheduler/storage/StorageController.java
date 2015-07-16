@@ -61,7 +61,12 @@ public class StorageController {
         mContext = null;
     }
 
-    private static String getApplicationStorageRootPath() {
+    /**
+     * Get application root storage path.
+     *
+     * @return
+     */
+    public static String getApplicationStorageRootPath() {
         return Environment.getExternalStorageDirectory().getPath() + "/" + ROOT_DIR_PATH;
     }
 

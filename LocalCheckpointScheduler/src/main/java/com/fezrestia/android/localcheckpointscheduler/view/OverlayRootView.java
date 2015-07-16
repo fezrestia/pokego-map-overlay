@@ -54,13 +54,14 @@ public class OverlayRootView extends FrameLayout {
     // UI interaction.
     private FrameLayout mInteractionViewContainer = null;
     private ImageView mCloseButton = null;
+    private ImageView mCaptureButton = null;
 
     // Time.
     private static final SimpleDateFormat TIME_INDICATOR_SDF
             = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 
     // Clock update cycle.
-    private static final int CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS = 20000;
+    private static final int CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS = 10000;
 
     // Display coordinates.
     private int mDisplayLongLineLength = 0;
@@ -192,6 +193,17 @@ public class OverlayRootView extends FrameLayout {
         hideButtonParams.bottomMargin = 20;
         mInteractionViewContainer.addView(mCloseButton, hideButtonParams);
 
+        // Capture button.
+        mCaptureButton = new ImageView(getContext());
+        mCaptureButton.setOnTouchListener(mCaptureButtonOnTouchListenerImpl);
+        mCaptureButton.setImageResource(R.drawable.capture_button);
+        FrameLayout.LayoutParams captureButtonParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        captureButtonParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        captureButtonParams.bottomMargin = 20;
+        mInteractionViewContainer.addView(mCaptureButton, captureButtonParams);
+
         // Screen shot generator.
         mScreenShotGenerator = new ScreenShotGenerator(
                 mUserWebViewContainer,
@@ -248,6 +260,10 @@ public class OverlayRootView extends FrameLayout {
         if (mCloseButton != null) {
             mCloseButton.setOnTouchListener(null);
             mCloseButton = null;
+        }
+        if (mCaptureButton != null) {
+            mCaptureButton.setOnTouchListener(null);
+            mCaptureButton = null;
         }
 
         if (mScreenShotGenerator != null) {
@@ -476,7 +492,24 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
+    private final CaptureButtonOnTouchListenerImpl mCaptureButtonOnTouchListenerImpl
+            = new CaptureButtonOnTouchListenerImpl();
+    private class CaptureButtonOnTouchListenerImpl implements OnTouchListener {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_UP:
+                    OverlayViewController.getInstance().captureScreenShot();
+                    break;
 
+                default:
+                    // NOP;
+                    break;
+            }
+
+            return true;
+        }
+    }
 
     /**
      * Request screen shot.

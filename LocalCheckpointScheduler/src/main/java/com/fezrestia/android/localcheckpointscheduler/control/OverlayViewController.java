@@ -46,6 +46,9 @@ public class OverlayViewController {
     // Always reload after capture screen shot.
     private boolean mIsAlwaysReloadEnabled = false;
 
+    // Now on manual capturing or not.
+    private boolean mIsInManualCapturing = false;
+
     /**
      * Life cycle trigger interface.
      */
@@ -349,6 +352,43 @@ public class OverlayViewController {
                 // Go to next capture.
                 mUiWorker.postDelayed(this, mScreenShotIntervalMin * 60 * 1000);
             }
+        }
+    }
+
+    /**
+     * Take 1 screen shot.
+     */
+    public void captureScreenShot() {
+        if (Log.IS_DEBUG) Log.logDebug(TAG, "captureScreenShot() : E");
+
+        if (!mIsInManualCapturing) {
+            mIsInManualCapturing = true;
+
+            // Capture single.
+            mRootView.requestCapture(false, new ManualCaptureDoneCallback());
+        } else {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "");
+        }
+
+        if (Log.IS_DEBUG) Log.logDebug(TAG, "captureScreenShot() : X");
+    }
+
+    private class ManualCaptureDoneCallback implements OverlayRootView.OnScreenShotDoneCallback {
+        public final String TAG = ManualCaptureDoneCallback.class.getSimpleName();
+
+        @Override
+        public void onScreenShotDone(byte[] pngBuffer) {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "onScreenShotDone() : E");
+
+            if (mStorageController != null) {
+                mStorageController.storeFile(
+                        pngBuffer,
+                        mStorageController.getApplicationStorageRootPath());
+            }
+
+            mIsInManualCapturing = false;
+
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "onScreenShotDone() : X");
         }
     }
 }
