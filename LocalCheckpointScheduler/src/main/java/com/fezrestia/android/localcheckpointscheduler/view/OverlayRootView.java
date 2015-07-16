@@ -55,6 +55,7 @@ public class OverlayRootView extends FrameLayout {
     private FrameLayout mInteractionViewContainer = null;
     private ImageView mCloseButton = null;
     private ImageView mCaptureButton = null;
+    private ImageView mReloadButton = null;
 
     // Time.
     private static final SimpleDateFormat TIME_INDICATOR_SDF
@@ -204,6 +205,18 @@ public class OverlayRootView extends FrameLayout {
         captureButtonParams.bottomMargin = 20;
         mInteractionViewContainer.addView(mCaptureButton, captureButtonParams);
 
+        // Reload button.
+        mReloadButton = new ImageView(getContext());
+        mReloadButton.setOnTouchListener(mReloadButtonOnTouchListenerImpl);
+        mReloadButton.setImageResource(R.drawable.reload_button);
+        FrameLayout.LayoutParams reloadButtonParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        reloadButtonParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
+        reloadButtonParams.leftMargin = 20;
+        reloadButtonParams.bottomMargin = 20;
+        mInteractionViewContainer.addView(mReloadButton, reloadButtonParams);
+
         // Screen shot generator.
         mScreenShotGenerator = new ScreenShotGenerator(
                 mUserWebViewContainer,
@@ -264,6 +277,10 @@ public class OverlayRootView extends FrameLayout {
         if (mCaptureButton != null) {
             mCaptureButton.setOnTouchListener(null);
             mCaptureButton = null;
+        }
+        if (mReloadButton != null) {
+            mReloadButton.setOnTouchListener(null);
+            mReloadButton = null;
         }
 
         if (mScreenShotGenerator != null) {
@@ -504,6 +521,26 @@ public class OverlayRootView extends FrameLayout {
 
                 default:
                     // NOP;
+                    break;
+            }
+
+            return true;
+        }
+    }
+
+    private final ReloadButtonOnTouchListenerImpl mReloadButtonOnTouchListenerImpl
+            = new ReloadButtonOnTouchListenerImpl();
+    private class ReloadButtonOnTouchListenerImpl implements OnTouchListener {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()){
+                case MotionEvent.ACTION_UP:
+                    mUserWebView.stopLoading();
+                    mUserWebView.reload();
+                    break;
+
+                default:
+                    // NOP.
                     break;
             }
 
