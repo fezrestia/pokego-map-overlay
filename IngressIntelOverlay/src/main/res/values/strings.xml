@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Ingress Intel Overlay</string>
+
+    <string name="preference_label">Ingress Intel Overlay</string>
+
+    <string name="ongoing_notification">IntelMAP ON</string>
+
+</resources>

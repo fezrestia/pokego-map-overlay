@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">Local Check Point Scheduler</string>
-
-    <string name="preference_label">Local Check Point Scheduler</string>
-
-    <string name="ongoing_notification">Overlay INTEL Map</string>
-
-</resources>
