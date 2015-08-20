@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.service;
+package com.fezrestia.android.ingressinteloverlay.service;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -6,11 +6,11 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.R;
-import com.fezrestia.android.localcheckpointscheduler.activity.UserPreferenceActivity;
-import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.Constants;
+import com.fezrestia.android.ingressinteloverlay.R;
+import com.fezrestia.android.ingressinteloverlay.activity.UserPreferenceActivity;
+import com.fezrestia.android.ingressinteloverlay.control.OverlayViewController;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 public class OverlayViewService extends Service {
     // Log tag.

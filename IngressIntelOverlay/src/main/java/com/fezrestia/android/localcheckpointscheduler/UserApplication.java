@@ -1,10 +1,10 @@
-package com.fezrestia.android.localcheckpointscheduler;
+package com.fezrestia.android.ingressinteloverlay;
 
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 public class UserApplication extends Application {
     // Log tag.

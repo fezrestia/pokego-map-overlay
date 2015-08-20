@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.control;
+package com.fezrestia.android.ingressinteloverlay.control;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,12 +7,12 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.R;
-import com.fezrestia.android.localcheckpointscheduler.service.OverlayViewService;
-import com.fezrestia.android.localcheckpointscheduler.storage.StorageController;
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
-import com.fezrestia.android.localcheckpointscheduler.view.OverlayRootView;
+import com.fezrestia.android.ingressinteloverlay.Constants;
+import com.fezrestia.android.ingressinteloverlay.R;
+import com.fezrestia.android.ingressinteloverlay.service.OverlayViewService;
+import com.fezrestia.android.ingressinteloverlay.storage.StorageController;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
+import com.fezrestia.android.ingressinteloverlay.view.OverlayRootView;
 
 public class OverlayViewController {
     // Log tag.
@@ -381,9 +381,7 @@ public class OverlayViewController {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "onScreenShotDone() : E");
 
             if (mStorageController != null) {
-                mStorageController.storeFile(
-                        pngBuffer,
-                        mStorageController.getApplicationStorageRootPath());
+                mStorageController.storeFile(pngBuffer);
             }
 
             mIsInManualCapturing = false;

@@ -1,6 +1,6 @@
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.fezrestia.android.localcheckpointscheduler"
+        package="com.fezrestia.android.ingressinteloverlay"
 >
 
     <!-- Permissions. -->
@@ -43,7 +43,7 @@
                  android:name=".receiver.OverlayViewTriggerReceiver"
         >
             <intent-filter>
-                <action android:name="com.fezrestia.android.localcheckpointscheduler.intent.ACTION_OVERLAY_VIEW_TRIGGER" />
+                <action android:name="com.fezrestia.android.ingressinteloverlay.intent.ACTION_OVERLAY_VIEW_TRIGGER" />
             </intent-filter>
         </receiver>
 

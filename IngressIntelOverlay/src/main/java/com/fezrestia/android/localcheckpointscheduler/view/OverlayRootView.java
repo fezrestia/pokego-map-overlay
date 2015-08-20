@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.view;
+package com.fezrestia.android.ingressinteloverlay.view;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,11 +22,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.R;
-import com.fezrestia.android.localcheckpointscheduler.UserApplication;
-import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.Constants;
+import com.fezrestia.android.ingressinteloverlay.R;
+import com.fezrestia.android.ingressinteloverlay.UserApplication;
+import com.fezrestia.android.ingressinteloverlay.control.OverlayViewController;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,11 +1,11 @@
-package com.fezrestia.android.localcheckpointscheduler.storage;
+package com.fezrestia.android.ingressinteloverlay.storage;
 
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,7 +25,7 @@ public class StorageController {
     private Context mContext = null;
 
     // Constants.
-    private static final String ROOT_DIR_PATH = "LocalCheckpointScheduler";
+    private static final String ROOT_DIR_PATH = "IngressIntelOverlay";
     private static final String PNG_FILE_EXTENSION = ".PNG";
 
     // File name format.
@@ -107,24 +107,44 @@ public class StorageController {
     }
 
     /**
+     * Store file on application root directory.
+     *
+     * @param buffer
+     */
+    public void storeFile(byte[] buffer) {
+        storeFile(buffer, null);
+    }
+
+    /**
      * Store file in background.
      *
      * @param buffer
-     * @param dir
+     * @param dir if null, buffer will be stored on root.
      */
     public void storeFile(byte[] buffer, String dir) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "storeFile() : E");
 
         // Create directory.
-        createNewContentsDirectory(dir);
+        if (dir != null) {
+            createNewContentsDirectory(dir);
+        }
 
         // File name.
         final String fileName = getDateTimeString();
 
+        // Full file name.
+        final String fileFullPath;
+        if (dir != null) {
+            fileFullPath = getApplicationStorageRootPath() + "/" +  dir + "/" + fileName
+                    + PNG_FILE_EXTENSION;
+        } else {
+            fileFullPath = getApplicationStorageRootPath() + "/" + fileName + PNG_FILE_EXTENSION;
+        }
+
         StoreFileTask task = new StoreFileTask(
                 mContext,
                 buffer,
-                getApplicationStorageRootPath() + "/" +  dir + "/" + fileName + PNG_FILE_EXTENSION);
+                fileFullPath);
 
         // Execute.
         mBackWorker.execute(task);

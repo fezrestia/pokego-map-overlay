@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.view;
+package com.fezrestia.android.ingressinteloverlay.view;
 
 import android.content.Context;
 import android.os.Handler;
@@ -9,7 +9,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

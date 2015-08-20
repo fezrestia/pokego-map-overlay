@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.activity;
+package com.fezrestia.android.ingressinteloverlay.activity;
 
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -7,11 +7,11 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.R;
-import com.fezrestia.android.localcheckpointscheduler.UserApplication;
-import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.Constants;
+import com.fezrestia.android.ingressinteloverlay.R;
+import com.fezrestia.android.ingressinteloverlay.UserApplication;
+import com.fezrestia.android.ingressinteloverlay.control.OverlayViewController;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 public class UserPreferenceActivity extends PreferenceActivity {
     // Log tag.

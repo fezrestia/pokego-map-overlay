@@ -16,7 +16,7 @@ Pre-Built/Signed APK is placed on root.
 3. Click to check "Enable overlay view", and overlay INTEL is available
 4. Click to check "Enable cycle record", and recording is started
 5. Uncheck them to disable / stop.<br>
-   Screen shots are stored in "&lt;root&gt;/LocalCheckpointScheduler/"
+   Screen shots are stored in "&lt;root&gt;/IngressIntelOverlay/"
 
 On-Screen UI
  - CLOSE

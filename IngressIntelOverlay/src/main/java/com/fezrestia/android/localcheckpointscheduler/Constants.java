@@ -1,11 +1,11 @@
-package com.fezrestia.android.localcheckpointscheduler;
+package com.fezrestia.android.ingressinteloverlay;
 
 import android.view.Gravity;
 
 public class Constants {
     // Intent constants.
     public static final String INTENT_ACTION_OVERLAY_VIEW_TRIGGER
-            = "com.fezrestia.android.localcheckpointscheduler.intent.ACTION_OVERLAY_VIEW_TRIGGER";
+            = "com.fezrestia.android.ingressinteloverlay.intent.ACTION_OVERLAY_VIEW_TRIGGER";
 
     /** SP Key, overlay en/disable. */
     public static final String SP_KEY_OVERLAY_VIEW_ENABLED = "is_overlay_view_enabled";

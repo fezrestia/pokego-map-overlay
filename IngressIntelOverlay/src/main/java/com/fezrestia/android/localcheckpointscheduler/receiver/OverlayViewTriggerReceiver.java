@@ -1,12 +1,12 @@
-package com.fezrestia.android.localcheckpointscheduler.receiver;
+package com.fezrestia.android.ingressinteloverlay.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.fezrestia.android.localcheckpointscheduler.Constants;
-import com.fezrestia.android.localcheckpointscheduler.control.OverlayViewController;
-import com.fezrestia.android.localcheckpointscheduler.util.Log;
+import com.fezrestia.android.ingressinteloverlay.Constants;
+import com.fezrestia.android.ingressinteloverlay.control.OverlayViewController;
+import com.fezrestia.android.ingressinteloverlay.util.Log;
 
 public class OverlayViewTriggerReceiver extends BroadcastReceiver {
     // Log tag.

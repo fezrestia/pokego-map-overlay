@@ -1,4 +1,4 @@
-package com.fezrestia.android.localcheckpointscheduler.util;
+package com.fezrestia.android.ingressinteloverlay.util;
 
 public class Log {
     // All area total log trigger.

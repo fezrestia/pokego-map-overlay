@@ -5,11 +5,11 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "com.fezrestia.android.localcheckpointscheduler"
+        applicationId "com.fezrestia.android.ingressinteloverlay"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 10
-        versionName "0.10"
+        versionCode 11
+        versionName "0.11"
     }
     buildTypes {
         release {
@@ -24,7 +24,7 @@ android {
             if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
                 // Rename APK.
                 output.outputFile = new File(
-                        "$project.buildDir/outputs/apk/${variant.name}/IngressIntelLocalCheckpointScheduler.apk")
+                        "$project.buildDir/outputs/apk/${variant.name}/IngressIntelOverlay.apk")
             } else {
                 // Replace.
                 output.outputFile = new File(
