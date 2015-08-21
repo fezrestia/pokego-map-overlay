@@ -57,6 +57,9 @@ public class OverlayRootView extends FrameLayout {
     private ImageView mCaptureButton = null;
     private ImageView mReloadButton = null;
 
+    // Grip.
+    private View mSliderGrip = null;
+
     // Time.
     private static final SimpleDateFormat TIME_INDICATOR_SDF
             = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -88,13 +91,23 @@ public class OverlayRootView extends FrameLayout {
                 ;
 
     // UI scale.
-    private static final float mUiScaleRate = 0.5f;
+    private static final float mUiScaleRate = 0.6f;
 
     // Screen shot generator.
     private ScreenShotGenerator mScreenShotGenerator = null;
 
     // Capture delay. e.g. waiting for java script execution done.
     private static final int CAPTURE_DELAY_MILLIS = 5000;
+
+    // Grip width.
+    private static final int SLIDER_GRIP_WIDTH_PIX = 1080 - 960;
+
+    // Window position constants.
+    private int mWinShowPosX = 0;
+    private int mWinHidePosX = 0;
+
+    // Window position correction animation.
+    private WindowPositionCorrectionTask mWindowPositionCorrectionTask = null;
 
     // CONSTRUCTOR.
     public OverlayRootView(final Context context) {
@@ -223,6 +236,10 @@ public class OverlayRootView extends FrameLayout {
                 mHudViewContainer,
                 isLoadingDetectionEnabled);
         mUserWebView.setLoadingStateCallback(mScreenShotGenerator);
+
+        // Slider grip.
+        mSliderGrip = findViewById(R.id.slider_grip_container);
+        mSliderGrip.setOnTouchListener(new SliderGripTouchEventHandler());
     }
 
     private void loadPreferences() {
@@ -261,6 +278,11 @@ public class OverlayRootView extends FrameLayout {
         mUiWorker.removeCallbacks(mUpdateClockIndicatorTask);
         mUiWorker.removeCallbacks(mShowViewTask);
         mUiWorker.removeCallbacks(mHideViewTask);
+
+        if (mSliderGrip != null) {
+            mSliderGrip.setOnTouchListener(null);
+            mSliderGrip = null;
+        }
 
         if (mUserWebView != null) {
             mUserWebView.setLoadingStateCallback(null);
@@ -309,9 +331,14 @@ public class OverlayRootView extends FrameLayout {
 
     private void updateWindowParams() {
         mWindowLayoutParams.width = mDisplayShortLineLength;
-        mWindowLayoutParams.height = mDisplayShortLineLength;
+        mWindowLayoutParams.height = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
         mWindowLayoutParams.gravity = Gravity.CENTER;
-        mWindowLayoutParams.x = 0;
+
+        // Window show/hide constants.
+        mWinShowPosX = 0;
+        mWinHidePosX = -1 * (mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX);
+
+        mWindowLayoutParams.x = mWinHidePosX;
         mWindowLayoutParams.y = 0;
 
         if (Log.IS_DEBUG) Log.logDebug(TAG,
@@ -324,20 +351,51 @@ public class OverlayRootView extends FrameLayout {
     }
 
     private void updateLayoutParams() {
+        updateUiWebViewContainerLayoutParams();
+        updateHudViewContainerLayoutParams();
+        updateInteractionViewContainerLayoutParams();
+    }
+
+    private void updateUiWebViewContainerLayoutParams() {
+        // Container size.
+        mUserWebViewContainer.getLayoutParams().width
+                = mDisplayShortLineLength  - SLIDER_GRIP_WIDTH_PIX;
+        mUserWebViewContainer.getLayoutParams().height
+                = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
+
+        // Contents size.
         mUserWebView.setScaleX(mUiScaleRate);
         mUserWebView.setScaleY(mUiScaleRate);
         FrameLayout.LayoutParams webViewLayoutParams = (FrameLayout.LayoutParams)
                 mUserWebView.getLayoutParams();
-        webViewLayoutParams.width = (int) (mDisplayShortLineLength / mUiScaleRate);
-        webViewLayoutParams.height = (int) (mDisplayShortLineLength / mUiScaleRate);
+        webViewLayoutParams.width = (int)
+                ((mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX) / mUiScaleRate);
+        webViewLayoutParams.height = (int)
+                ((mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX) / mUiScaleRate);
         webViewLayoutParams.gravity = Gravity.CENTER;
         mUserWebView.setLayoutParams(webViewLayoutParams);
 
         FrameLayout.LayoutParams edgeFrameLayoutParams = (FrameLayout.LayoutParams)
                 mEdgeFrame.getLayoutParams();
-        edgeFrameLayoutParams.width = mDisplayShortLineLength;
-        edgeFrameLayoutParams.height = mDisplayShortLineLength;
+        edgeFrameLayoutParams.width = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
+        edgeFrameLayoutParams.height = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
         mEdgeFrame.setLayoutParams(edgeFrameLayoutParams);
+    }
+
+    private void updateHudViewContainerLayoutParams() {
+        // Container size.
+        mHudViewContainer.getLayoutParams().width
+                = mDisplayShortLineLength  - SLIDER_GRIP_WIDTH_PIX;
+        mHudViewContainer.getLayoutParams().height
+                = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
+    }
+
+    private void updateInteractionViewContainerLayoutParams() {
+        // Container size.
+        mInteractionViewContainer.getLayoutParams().width
+                = mDisplayShortLineLength  - SLIDER_GRIP_WIDTH_PIX;
+        mInteractionViewContainer.getLayoutParams().height
+                = mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX;
     }
 
     /**
@@ -927,6 +985,161 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
+    private class SliderGripTouchEventHandler implements View.OnTouchListener {
+        private int mOnDownWinPosX = 0;
+        private int mOnDownBasePosX = 0;
 
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mOnDownBasePosX = (int) event.getRawX();
+                    mOnDownWinPosX = mWindowLayoutParams.x;
+                    break;
 
+                case MotionEvent.ACTION_MOVE:
+                    int diffX = ((int) event.getRawX()) - mOnDownBasePosX;
+                    int nextWinPosX = mOnDownWinPosX + diffX;
+
+                    if (isAttachedToWindow()) {
+                        // Check limit.
+                        if (nextWinPosX < mWinHidePosX) {
+                            nextWinPosX = mWinHidePosX;
+                        }
+                        if (mWinShowPosX < nextWinPosX) {
+                            nextWinPosX = mWinShowPosX;
+                        }
+
+                        // Update.
+                        mWindowLayoutParams.x = nextWinPosX;
+                        mWindowManager.updateViewLayout(OverlayRootView.this, mWindowLayoutParams);
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // fall-through.
+                case MotionEvent.ACTION_CANCEL:
+                    // Reset.
+                    mOnDownBasePosX = 0;
+                    mOnDownWinPosX = 0;
+
+                    // Check.
+                    if (mWindowPositionCorrectionTask != null) {
+                        mUiWorker.removeCallbacks(mWindowPositionCorrectionTask);
+                    }
+
+                    // Fixed position.
+                    Point targetPoint;
+                    if (mDisplayShortLineLength / 2 < event.getRawX()) {
+                        targetPoint = new Point(mWinShowPosX, mWindowLayoutParams.y);
+                    } else {
+                        targetPoint = new Point(mWinHidePosX, mWindowLayoutParams.y);
+                    }
+
+                    // Start fix.
+                    mWindowPositionCorrectionTask = new WindowPositionCorrectionTask(
+                            OverlayRootView.this,
+                            targetPoint,
+                            mWindowManager,
+                            mWindowLayoutParams,
+                            mUiWorker);
+                    mUiWorker.post(mWindowPositionCorrectionTask);
+                    break;
+
+                default:
+                    // NOP. Unexpected.
+                    break;
+            }
+
+            return true;
+        }
+
+    }
+
+    private static class WindowPositionCorrectionTask implements Runnable {
+        // Environment.
+        private final WindowManager mWinMng;
+        private final WindowManager.LayoutParams mWinParams;
+        private final Handler mHandler;
+
+        // Target.
+        private final View mTargetView;
+        private final Point mTargetWindowPosit;
+
+        // Proportional gain.
+        private static final float P_GAIN = 0.2f;
+
+        // Animation refresh interval.
+        private static final int WINDOW_ANIMATION_INTERVAL_MILLIS = 16;
+
+        // Last delta.
+        private int mLastDeltaX = 0;
+        private int mLastDeltaY = 0;
+
+        /**
+         * CONSTRUCTOR.
+         *
+         * @param targetView
+         * @param targetPos
+         * @param winMng
+         * @param winParams
+         * @param handler
+         */
+        public WindowPositionCorrectionTask(
+                View targetView,
+                Point targetPos,
+                WindowManager winMng,
+                WindowManager.LayoutParams winParams,
+                Handler handler) {
+            mTargetView = targetView;
+            mTargetWindowPosit = targetPos;
+            mWinMng = winMng;
+            mWinParams = winParams;
+            mHandler = handler;
+        }
+
+        @Override
+        public void run() {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "WindowPositionCorrectionTask.run() : E");
+
+            final int dX = mTargetWindowPosit.x - mWinParams.x;
+            final int dY = mTargetWindowPosit.y - mWinParams.y;
+
+            // Update layout.
+            mWinParams.x += (int) (dX * P_GAIN);
+            mWinParams.y += (int) (dY * P_GAIN);
+
+            if (mTargetView.isAttachedToWindow()) {
+                mWinMng.updateViewLayout(
+                        mTargetView,
+                        mWinParams);
+            } else {
+                // Already detached from window.
+                if (Log.IS_DEBUG) Log.logDebug(TAG, "Already detached from window.");
+                return;
+            }
+
+            // Check next.
+            if (mLastDeltaX == dX && mLastDeltaY == dY) {
+                // Correction is already convergent.
+                if (Log.IS_DEBUG) Log.logDebug(TAG, "Already position fixed.");
+
+                // Fix position.
+                mWinParams.x = mTargetWindowPosit.x;
+                mWinParams.y = mTargetWindowPosit.y;
+
+                mWinMng.updateViewLayout(
+                        mTargetView,
+                        mWinParams);
+                return;
+            }
+            mLastDeltaX = dX;
+            mLastDeltaY = dY;
+
+            // Next.
+            mHandler.postDelayed(this, WINDOW_ANIMATION_INTERVAL_MILLIS);
+
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "WindowPositionCorrectionTask.run() : X");
+        }
+    }
 }
