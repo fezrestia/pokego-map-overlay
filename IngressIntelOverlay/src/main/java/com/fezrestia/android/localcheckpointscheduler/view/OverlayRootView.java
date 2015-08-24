@@ -81,12 +81,11 @@ public class OverlayRootView extends FrameLayout {
                 | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                 ;
     private static final int UNINTERACTIVE_WINDOW_FLAGS = 0 // Dummy
                 | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 ;
 
@@ -103,8 +102,8 @@ public class OverlayRootView extends FrameLayout {
     private static final int SLIDER_GRIP_WIDTH_PIX = 1080 - 960;
 
     // Window position constants.
-    private int mWinShowPosX = 0;
-    private int mWinHidePosX = 0;
+    private int mWinOpenPosX = 0;
+    private int mWinClosePosX = 0;
 
     // Window position correction animation.
     private WindowPositionCorrectionTask mWindowPositionCorrectionTask = null;
@@ -335,10 +334,10 @@ public class OverlayRootView extends FrameLayout {
         mWindowLayoutParams.gravity = Gravity.CENTER;
 
         // Window show/hide constants.
-        mWinShowPosX = 0;
-        mWinHidePosX = -1 * (mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX);
+        mWinOpenPosX = 0;
+        mWinClosePosX = -1 * (mDisplayShortLineLength - SLIDER_GRIP_WIDTH_PIX);
 
-        mWindowLayoutParams.x = mWinHidePosX;
+        mWindowLayoutParams.x = mWinOpenPosX;
         mWindowLayoutParams.y = 0;
 
         if (Log.IS_DEBUG) Log.logDebug(TAG,
@@ -1003,11 +1002,11 @@ public class OverlayRootView extends FrameLayout {
 
                     if (isAttachedToWindow()) {
                         // Check limit.
-                        if (nextWinPosX < mWinHidePosX) {
-                            nextWinPosX = mWinHidePosX;
+                        if (nextWinPosX < mWinClosePosX) {
+                            nextWinPosX = mWinClosePosX;
                         }
-                        if (mWinShowPosX < nextWinPosX) {
-                            nextWinPosX = mWinShowPosX;
+                        if (mWinOpenPosX < nextWinPosX) {
+                            nextWinPosX = mWinOpenPosX;
                         }
 
                         // Update.
@@ -1031,9 +1030,15 @@ public class OverlayRootView extends FrameLayout {
                     // Fixed position.
                     Point targetPoint;
                     if (mDisplayShortLineLength / 2 < event.getRawX()) {
-                        targetPoint = new Point(mWinShowPosX, mWindowLayoutParams.y);
+                        targetPoint = new Point(mWinOpenPosX, mWindowLayoutParams.y);
+
+                        // Enable interaction.
+                        enableOverlayInteraction();
                     } else {
-                        targetPoint = new Point(mWinHidePosX, mWindowLayoutParams.y);
+                        targetPoint = new Point(mWinClosePosX, mWindowLayoutParams.y);
+
+                        // Disable interaction.
+                        disableOverlayInteraction();
                     }
 
                     // Start fix.
