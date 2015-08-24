@@ -3,13 +3,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
-
     defaultConfig {
         applicationId "com.fezrestia.android.ingressinteloverlay"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 15
-        versionName "0.15"
+        versionCode 16
+        versionName '0.16'
     }
     buildTypes {
         release {
@@ -17,7 +16,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
     // Defin1e APK name and replace.
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -32,9 +30,11 @@ android {
             }
         }
     }
+    productFlavors {
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:21.0.3'
 }

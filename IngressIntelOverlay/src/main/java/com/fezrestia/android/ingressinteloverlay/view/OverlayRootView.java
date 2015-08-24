@@ -53,7 +53,7 @@ public class OverlayRootView extends FrameLayout {
 
     // UI interaction.
     private FrameLayout mInteractionViewContainer = null;
-    private ImageView mCloseButton = null;
+//    private ImageView mCloseButton = null;
     private ImageView mCaptureButton = null;
     private ImageView mReloadButton = null;
 
@@ -195,16 +195,16 @@ public class OverlayRootView extends FrameLayout {
         mUiWorker.postDelayed(mUpdateClockIndicatorTask, CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS);
 
         // Hide button.
-        mCloseButton = new ImageView(getContext());
-        mCloseButton.setOnTouchListener(mHideButtonOnTouchListenerImpl);
-        mCloseButton.setImageResource(R.drawable.close_button);
-        FrameLayout.LayoutParams hideButtonParams = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        hideButtonParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
-        hideButtonParams.rightMargin = 20;
-        hideButtonParams.bottomMargin = 20;
-        mInteractionViewContainer.addView(mCloseButton, hideButtonParams);
+//        mCloseButton = new ImageView(getContext());
+//        mCloseButton.setOnTouchListener(mHideButtonOnTouchListenerImpl);
+//        mCloseButton.setImageResource(R.drawable.close_button);
+//        FrameLayout.LayoutParams hideButtonParams = new FrameLayout.LayoutParams(
+//                ViewGroup.LayoutParams.WRAP_CONTENT,
+//                ViewGroup.LayoutParams.WRAP_CONTENT);
+//        hideButtonParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+//        hideButtonParams.rightMargin = 20;
+//        hideButtonParams.bottomMargin = 20;
+//        mInteractionViewContainer.addView(mCloseButton, hideButtonParams);
 
         // Capture button.
         mCaptureButton = new ImageView(getContext());
@@ -213,7 +213,8 @@ public class OverlayRootView extends FrameLayout {
         FrameLayout.LayoutParams captureButtonParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        captureButtonParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        captureButtonParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+        captureButtonParams.rightMargin = 20;
         captureButtonParams.bottomMargin = 20;
         mInteractionViewContainer.addView(mCaptureButton, captureButtonParams);
 
@@ -291,10 +292,10 @@ public class OverlayRootView extends FrameLayout {
         mEdgeFrame = null;
         mUserWebViewContainer = null;
         mHudViewContainer = null;
-        if (mCloseButton != null) {
-            mCloseButton.setOnTouchListener(null);
-            mCloseButton = null;
-        }
+//        if (mCloseButton != null) {
+//            mCloseButton.setOnTouchListener(null);
+//            mCloseButton = null;
+//        }
         if (mCaptureButton != null) {
             mCaptureButton.setOnTouchListener(null);
             mCaptureButton = null;
@@ -555,26 +556,26 @@ public class OverlayRootView extends FrameLayout {
 
 
 
-    private final HideButtonOnTouchListenerImpl mHideButtonOnTouchListenerImpl
-            = new HideButtonOnTouchListenerImpl();
-    private class HideButtonOnTouchListenerImpl implements OnTouchListener {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_UP:
-                    // fall-through.
-                case MotionEvent.ACTION_CANCEL:
-                    OverlayViewController.getInstance().pause();
-                    break;
-
-                default:
-                    // NOP;
-                    break;
-            }
-
-            return true;
-        }
-    }
+//    private final HideButtonOnTouchListenerImpl mHideButtonOnTouchListenerImpl
+//            = new HideButtonOnTouchListenerImpl();
+//    private class HideButtonOnTouchListenerImpl implements OnTouchListener {
+//        @Override
+//        public boolean onTouch(View v, MotionEvent event) {
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_UP:
+//                    // fall-through.
+//                case MotionEvent.ACTION_CANCEL:
+//                    OverlayViewController.getInstance().pause();
+//                    break;
+//
+//                default:
+//                    // NOP;
+//                    break;
+//            }
+//
+//            return true;
+//        }
+//    }
 
     private final CaptureButtonOnTouchListenerImpl mCaptureButtonOnTouchListenerImpl
             = new CaptureButtonOnTouchListenerImpl();
