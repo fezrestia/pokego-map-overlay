@@ -4,8 +4,8 @@ import android.view.Gravity;
 
 public class Constants {
     // Intent constants.
-    public static final String INTENT_ACTION_OVERLAY_VIEW_TRIGGER
-            = "com.fezrestia.android.ingressinteloverlay.intent.ACTION_OVERLAY_VIEW_TRIGGER";
+    public static final String INTENT_ACTION_START_PREFERENCE_ACTIVITY
+            = "com.fezrestia.android.ingressinteloverlay.intent.ACTION_START_PREFERENCE";
 
     /** SP Key, overlay en/disable. */
     public static final String SP_KEY_OVERLAY_VIEW_ENABLED = "is_overlay_view_enabled";

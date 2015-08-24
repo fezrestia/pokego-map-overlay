@@ -40,7 +40,7 @@ public class OverlayViewService extends Service {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onStartCommand() : E");
 
         // Preference trigger intent.
-        Intent showOverlayTrigger = new Intent(Constants.INTENT_ACTION_OVERLAY_VIEW_TRIGGER);
+        Intent showOverlayTrigger = new Intent(Constants.INTENT_ACTION_START_PREFERENCE_ACTIVITY);
         showOverlayTrigger.setPackage(getPackageName());
         PendingIntent notificationContent = PendingIntent.getBroadcast(
                 this,
@@ -61,9 +61,12 @@ public class OverlayViewService extends Service {
                 notification);
 
         // Load property.
-        boolean isAlwaysReloadEnabled = intent.getExtras().getBoolean(
-                Constants.SP_KEY_ALWAYS_RELOAD_ENABLED,
-                false);
+        boolean isAlwaysReloadEnabled = false;
+        if (intent != null && intent.getExtras() != null) {
+            isAlwaysReloadEnabled = intent.getExtras().getBoolean(
+                    Constants.SP_KEY_ALWAYS_RELOAD_ENABLED,
+                    false);
+        }
 
         // Start overlay view finder.
         OverlayViewController.getInstance().start(
