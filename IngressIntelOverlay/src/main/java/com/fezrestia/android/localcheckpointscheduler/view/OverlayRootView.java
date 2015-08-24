@@ -414,6 +414,16 @@ public class OverlayRootView extends FrameLayout {
         updateWindowParams();
         // UI layout.
         updateLayoutParams();
+
+        // Ignore Landscape configuration.
+        if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            disableOverlayInteraction();
+
+            if (isAttachedToWindow()) {
+                mWindowLayoutParams.x = -5000;
+                mWindowManager.updateViewLayout(this, mWindowLayoutParams);
+            }
+        }
     }
 
     private void calculateScreenConfiguration() {
