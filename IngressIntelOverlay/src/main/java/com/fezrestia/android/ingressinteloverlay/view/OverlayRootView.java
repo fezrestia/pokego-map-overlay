@@ -78,12 +78,17 @@ public class OverlayRootView extends FrameLayout {
     private WindowManager mWindowManager = null;
     private WindowManager.LayoutParams mWindowLayoutParams = null;
     private static final int INTERACTIVE_WINDOW_FLAGS = 0 // Dummy
-                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+                // NOTICE:
+                //   If hardware acceleration is enabled, portal indicator will not be rendered
+                //   in drawing cache. (on UI, portal indicator is shown normally)
+                //   This is IntelMap or WebView specification maybe,
+                //   so, disable hardware acceleration.
+//                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 ;
     private static final int UNINTERACTIVE_WINDOW_FLAGS = 0 // Dummy
-                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+//                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -691,6 +696,11 @@ public class OverlayRootView extends FrameLayout {
             if (mClockIndicator != null) {
                 // Update time.
                 mClockIndicator.setText(getTimeString());
+
+                // NOTICE:
+                //   WebView is not rendered correctly after time indicator is updated
+                //   like as SurfaceView. So, invalidate to refresh WebView area.
+                mUserWebViewContainer.invalidate();
 
                 // Next.
                 mUiWorker.postDelayed(this, CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS);
