@@ -39,4 +39,14 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+            android:title="Web Setting"
+    >
+        <EditTextPreference
+                android:key="base-load-url"
+                android:title="Base load URL"
+                android:summary="Default load URL"
+        />
+    </PreferenceCategory>
+
 </PreferenceScreen>

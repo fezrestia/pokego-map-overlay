@@ -15,6 +15,8 @@ public class Constants {
     public static final String SP_KEY_ALWAYS_RELOAD_ENABLED = "is_always_reload_enabled";
     /** SP Key, reload interval min. */
     public static final String SP_KEY_CAPTURE_INTERVAL_MIN = "capture_interval_min";
+    /** SP Key, base load URL. */
+    public static final String SP_KEY_BASE_LOAD_URL = "base-load-url";
 
     /** Font file name. */
     public static final String FONT_FILENAME_CODA = "Coda/Coda-Regular.ttf";
@@ -22,6 +24,6 @@ public class Constants {
     /** Capture interval default. */
     public static final int DEFAULT_CAPTURE_INTERVAL_MIN = 1;
 
-
-
+    /** Default load URL. */
+    public static final String DEFAULT_LOAD_URL = "https://www.ingress.com/intel";
 }

@@ -22,6 +22,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
     private Preference mCycleRecordEnDis = null;
     private Preference mAlwaysReloadEnDis = null;
     private Preference mReloadIntervalSetting = null;
+    private Preference mBaseLoadUrlSetting = null;
 
     // Setting value.
     private boolean mIsAlwaysReload = false;
@@ -61,6 +62,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
         mReloadIntervalSetting = findPreference(Constants.SP_KEY_CAPTURE_INTERVAL_MIN);
         mReloadIntervalSetting.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
         bindPreference(mReloadIntervalSetting);
+        // Base load URL.
+        mBaseLoadUrlSetting = findPreference(Constants.SP_KEY_BASE_LOAD_URL);
+        mBaseLoadUrlSetting.setOnPreferenceChangeListener(mOnPreferenceChangeListener);
+        bindPreference(mBaseLoadUrlSetting);
     }
 
     @Override
@@ -161,6 +166,23 @@ public class UserPreferenceActivity extends PreferenceActivity {
                     }
                     break;
 
+                case Constants.SP_KEY_BASE_LOAD_URL:
+                    {
+                        // Update.
+                        updateBaseLoadUrlPreferenceSummary(stringValue);
+
+                        // Check intel map based URL or not.
+//                        final boolean isValid = stringValue.startsWith(
+//                                Constants.DEFAULT_LOAD_URL);
+//                        if (isValid) {
+//                            mBaseLoadUrlSetting.setSummary(stringValue);
+//                        } else {
+//                            // Invalid.
+//                            return false;
+//                        }
+                    }
+                    break;
+
                 default:
                     throw new IllegalArgumentException();
             }
@@ -198,14 +220,38 @@ public class UserPreferenceActivity extends PreferenceActivity {
                 break;
 
             case Constants.SP_KEY_CAPTURE_INTERVAL_MIN:
-                String captureIntervalString = UserApplication.getGlobalSharedPreferences()
-                        .getString(Constants.SP_KEY_CAPTURE_INTERVAL_MIN, String.valueOf(Constants.DEFAULT_CAPTURE_INTERVAL_MIN));
+                String captureIntervalString
+                        = UserApplication.getGlobalSharedPreferences().getString(
+                                Constants.SP_KEY_CAPTURE_INTERVAL_MIN,
+                                String.valueOf(Constants.DEFAULT_CAPTURE_INTERVAL_MIN));
                 mScreenShotIntervalMin = Integer.parseInt(captureIntervalString);
                 break;
 
+            case Constants.SP_KEY_BASE_LOAD_URL:
+                String baseLoadUrl = UserApplication.getGlobalSharedPreferences()
+                        .getString(Constants.SP_KEY_BASE_LOAD_URL, null);
+                // Update.
+                updateBaseLoadUrlPreferenceSummary(baseLoadUrl);
+                break;
 
             default:
                 throw new IllegalArgumentException();
+        }
+    }
+
+    private void updateBaseLoadUrlPreferenceSummary(String changedUrl) {
+        if (changedUrl != null) {
+            if (changedUrl.isEmpty()) {
+                // Empty.
+                mBaseLoadUrlSetting.setSummary(
+                        "Empty is DEFAULT:\n" + Constants.DEFAULT_LOAD_URL);
+            } else {
+                // Valid URL.
+                mBaseLoadUrlSetting.setSummary("Your URL:\n" + changedUrl);
+            }
+        } else {
+            mBaseLoadUrlSetting.setSummary(
+                    "Indicates your URL. Empty is reset to DEFAULT.");
         }
     }
 }

@@ -23,9 +23,7 @@ public class UserApplication extends Application {
         super.onCreate();
 
         // Create shared preferences accessor.
-        //TODO:
         mGlobalSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mGlobalSharedPreferences.edit().clear().commit();
 
         // Check version.
         int curVersion = mGlobalSharedPreferences.getInt(KEY_SHARED_PREFERENCES_VERSION, 0);

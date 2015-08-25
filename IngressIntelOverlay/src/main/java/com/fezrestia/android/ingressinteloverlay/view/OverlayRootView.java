@@ -168,6 +168,13 @@ public class OverlayRootView extends FrameLayout {
         // Web view.
         mUserWebView = new UserWebView(getContext());
         mUserWebView.initialize();
+        // Load URL.
+        String url = UserApplication.getGlobalSharedPreferences()
+                .getString(Constants.SP_KEY_BASE_LOAD_URL, Constants.DEFAULT_LOAD_URL);
+        if (url.isEmpty()) {
+            url = Constants.DEFAULT_LOAD_URL;
+        }
+        mUserWebView.loadWebPase(url);
 
         ViewGroup.LayoutParams webViewParams = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

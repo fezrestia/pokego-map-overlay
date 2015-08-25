@@ -32,9 +32,6 @@ public class UserWebView extends WebView {
     // Is interactive mode or not.
     private boolean mIsInInteractiveMode = true;
 
-    // Initial load target URL.
-    private static final String INITIAL_LOAD_URL = "https://www.ingress.com/intel";
-
     // JS done timeout.
     private static final int JS_DONE_TIMEOUT = 1000;
 
@@ -135,12 +132,17 @@ public class UserWebView extends WebView {
         // Tasks.
         mReloadTask = new ReloadTask();
 
-        // Load.
-        String intelUrl = INITIAL_LOAD_URL;
-        loadUrl(intelUrl);
-
         // Continuous check task.
         mUiWorker.post(mLoadingChecker);
+    }
+
+    /**
+     * Request to load URL.
+     *
+     * @param url
+     */
+    public void loadWebPase(String url) {
+        loadUrl(url);
     }
 
     private String loadJs(String assetsName) {
