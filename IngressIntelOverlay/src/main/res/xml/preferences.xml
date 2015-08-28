@@ -37,6 +37,15 @@
                 android:entryValues="@array/capture_interval_min_list_values"
         />
 
+        <ListPreference
+                android:key="webview_scale_ratio"
+                android:title="WebView scaling ratio"
+                android:summary="Large Area &lt; 1.0 &lt; Small Area"
+                android:entries="@array/webview_scale_ratio_entries"
+                android:entryValues="@array/webview_scale_ratio_values"
+                android:defaultValue="1.0"
+        />
+
     </PreferenceCategory>
 
     <PreferenceCategory

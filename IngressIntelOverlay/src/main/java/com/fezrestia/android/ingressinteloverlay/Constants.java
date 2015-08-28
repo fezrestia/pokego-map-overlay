@@ -17,6 +17,8 @@ public class Constants {
     public static final String SP_KEY_CAPTURE_INTERVAL_MIN = "capture_interval_min";
     /** SP Key, base load URL. */
     public static final String SP_KEY_BASE_LOAD_URL = "base-load-url";
+    /** SP Key, webview scale ratio. */
+    public static final String SP_KEY_WEBVIEW_SCALE_RATIO = "webview_scale_ratio";
 
     /** Font file name. */
     public static final String FONT_FILENAME_CODA = "Coda/Coda-Regular.ttf";

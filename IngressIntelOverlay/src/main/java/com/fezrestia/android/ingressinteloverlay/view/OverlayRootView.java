@@ -95,13 +95,13 @@ public class OverlayRootView extends FrameLayout {
                 ;
 
     // UI scale.
-    private static final float mUiScaleRate = 0.6f;
+    private float mUiScaleRate = 1.0f; // Default.
 
     // Screen shot generator.
     private ScreenShotGenerator mScreenShotGenerator = null;
 
     // Capture delay. e.g. waiting for java script execution done.
-    private static final int CAPTURE_DELAY_MILLIS = 5000;
+    private static final int CAPTURE_DELAY_MILLIS = 10000;
 
     // Grip width.
     private static final int SLIDER_GRIP_WIDTH_PIX = 1080 - 960;
@@ -257,8 +257,11 @@ public class OverlayRootView extends FrameLayout {
     private void loadPreferences() {
         SharedPreferences sp = UserApplication.getGlobalSharedPreferences();
 
-
-
+        // UI scale rate.
+        String uiScaleValue = sp.getString(Constants.SP_KEY_WEBVIEW_SCALE_RATIO, null);
+        if (uiScaleValue != null) {
+            mUiScaleRate = Float.parseFloat(uiScaleValue);
+        }
     }
 
     private void createWindowParameters() {
