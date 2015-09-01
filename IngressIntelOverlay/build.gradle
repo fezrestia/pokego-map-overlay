@@ -7,8 +7,8 @@ android {
         applicationId "com.fezrestia.android.ingressinteloverlay"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 19
-        versionName '0.19'
+        versionCode 20
+        versionName '0.20'
     }
     buildTypes {
         release {
