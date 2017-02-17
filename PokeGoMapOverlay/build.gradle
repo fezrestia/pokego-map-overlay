@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
+    defaultConfig {
+        applicationId "com.fezrestia.android.pokegomapoverlay"
+        minSdkVersion 19
+        targetSdkVersion 21
+        versionCode 0
+        versionName '0.0'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    // Defin1e APK name and replace.
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
+                // Rename APK.
+                output.outputFile = new File(
+                        "$project.buildDir/outputs/apk/${variant.name}/PokeGoMapOverlay.apk")
+            } else {
+                // Replace.
+                output.outputFile = new File(
+                        "$project.buildDir/outputs/apk/${variant.name}/${output.outputFile.name}")
+            }
+        }
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+}
