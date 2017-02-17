@@ -1,2 +1,2 @@
-# pokego-map-overlay
-Pokemon GO Map Overlay
+# Pokemon GO Map Overlay
+

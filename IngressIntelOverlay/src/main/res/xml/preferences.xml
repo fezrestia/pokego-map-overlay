@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+>
+
+    <PreferenceCategory
+            android:title="Overlay View"
+    >
+        <CheckBoxPreference
+                android:key="is_overlay_view_enabled"
+                android:title="Enable overlay view"
+                android:summary="Overlay view is en/disable"
+        />
+
+        <CheckBoxPreference
+                android:key="is_cycle_record_enabled"
+                android:title="Enable cycle record"
+                android:summary="Current cycle record is en/disable"
+        />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="Property"
+    >
+        <CheckBoxPreference
+                android:key="is_always_reload_enabled"
+                android:title="Enable always reload"
+                android:summary="Reload after screen-shot or not."
+        />
+
+        <ListPreference
+                android:key="capture_interval_min"
+                android:title="Capture interval min."
+                android:summary="Capture interval."
+                android:entries="@array/capture_interval_min_list_entries"
+                android:entryValues="@array/capture_interval_min_list_values"
+        />
+
+        <ListPreference
+                android:key="webview_scale_ratio"
+                android:title="WebView scaling ratio"
+                android:summary="Large Area &lt; 1.0 &lt; Small Area"
+                android:entries="@array/webview_scale_ratio_entries"
+                android:entryValues="@array/webview_scale_ratio_values"
+                android:defaultValue="1.0"
+        />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="Web Setting"
+    >
+        <EditTextPreference
+                android:key="base-load-url"
+                android:title="Base load URL"
+                android:summary="Default load URL"
+        />
+    </PreferenceCategory>
+
+</PreferenceScreen>
