@@ -7,11 +7,11 @@ import android.content.Intent;
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.activity.UserPreferenceActivity;
 import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.util.Log;
 
 public class OverlayViewReceiver extends BroadcastReceiver {
     // Log tag.
-    private static final String TAG = OverlayViewReceiver.class.getSimpleName();
+    private static final String TAG = "OverlayViewReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {

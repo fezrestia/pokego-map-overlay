@@ -10,11 +10,11 @@ import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.activity.UserPreferenceActivity;
 import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.util.Log;
 
 public class OverlayViewService extends Service {
     // Log tag.
-    private static final String TAG = OverlayViewService.class.getSimpleName();
+    private static final String TAG = "OverlayViewService";
 
     // On going notification ID.
     private static final int ONGOING_NOTIFICATION_ID = 100;
@@ -60,13 +60,8 @@ public class OverlayViewService extends Service {
                 ONGOING_NOTIFICATION_ID,
                 notification);
 
-        // Load property.
-        boolean isAlwaysReloadEnabled = false;
-
         // Start overlay view finder.
-        OverlayViewController.getInstance().start(
-                OverlayViewService.this,
-                isAlwaysReloadEnabled);
+        OverlayViewController.getInstance().start(OverlayViewService.this);
         OverlayViewController.getInstance().resume();
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onStartCommand() : X");

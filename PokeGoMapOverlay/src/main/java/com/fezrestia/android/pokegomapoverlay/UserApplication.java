@@ -2,13 +2,14 @@ package com.fezrestia.android.pokegomapoverlay;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.util.Log;
 
 public class UserApplication extends Application {
     // Log tag.
-    private static final String TAG = UserApplication.class.getSimpleName();
+    private static final String TAG = "UserApplication";
 
     // Shared preference accessor.
     private static SharedPreferences mGlobalSharedPreferences = null;
@@ -16,6 +17,9 @@ public class UserApplication extends Application {
     // SharedPreferences version key.
     private static final String KEY_SHARED_PREFERENCES_VERSION = "key-shared-preferences-version";
     private static final int VAL_SHARED_PREFERENCES_VERSION = 1;
+
+    // UI thread worker.
+    private static Handler mUiThreadHandler = null;
 
     @Override
     public void onCreate() {
@@ -34,6 +38,9 @@ public class UserApplication extends Application {
                     VAL_SHARED_PREFERENCES_VERSION)
                     .commit();
         }
+
+        // UI thread handler.
+        mUiThreadHandler = new Handler();
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "CONSTRUCTOR : X");
     }
@@ -56,5 +63,14 @@ public class UserApplication extends Application {
      */
     public static SharedPreferences getGlobalSharedPreferences() {
         return mGlobalSharedPreferences;
+    }
+
+    /**
+     * Get global UI thread handler.
+     *
+     * @return
+     */
+    public static Handler getUiThreadHandler() {
+        return mUiThreadHandler;
     }
 }

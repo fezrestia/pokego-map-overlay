@@ -10,18 +10,19 @@ import android.view.LayoutInflater;
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.service.OverlayViewService;
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.pokegomapoverlay.UserApplication;
 import com.fezrestia.android.pokegomapoverlay.view.OverlayRootView;
+import com.fezrestia.android.util.Log;
 
 public class OverlayViewController {
     // Log tag.
-    private static final String TAG = OverlayViewController.class.getSimpleName();
+    private static final String TAG = "OverlayViewController";
 
     // Master context.
     private  Context mContext;
 
     // UI thread worker.
-    private Handler mUiWorker = new Handler();
+    private Handler mUiWorker = UserApplication.getUiThreadHandler();
 
     // Singleton instance
     private static final OverlayViewController INSTANCE = new OverlayViewController();
@@ -29,18 +30,12 @@ public class OverlayViewController {
     // Overlay view.
     private OverlayRootView mRootView = null;
 
-    // Always reload after capture screen shot.
-    private boolean mIsAlwaysReloadEnabled = false;
-
     /**
      * Life cycle trigger interface.
      */
     public static class LifeCycleTrigger {
-        private static final String TAG = LifeCycleTrigger.class.getSimpleName();
+        private static final String TAG = "LifeCycleTrigger";
         private static final LifeCycleTrigger INSTANCE = new LifeCycleTrigger();
-
-        // Wake lock.
-        private PowerManager.WakeLock mWakeLock = null;
 
         // CONSTRUCTOR.
         private LifeCycleTrigger() {
@@ -60,20 +55,10 @@ public class OverlayViewController {
          * Start.
          *
          * @param context
-         * @param isAlwaysReloadEnabled
          */
-        public void requestStart(Context context, boolean isAlwaysReloadEnabled) {
+        public void requestStart(Context context) {
             Intent service = new Intent(context, OverlayViewService.class);
             ComponentName component = context.startService(service);
-
-            // Wake lock.
-            if (mWakeLock == null) {
-                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                mWakeLock = pm.newWakeLock(
-                        PowerManager.PARTIAL_WAKE_LOCK,
-                        context.getPackageName());
-                mWakeLock.acquire();
-            }
 
             if (Log.IS_DEBUG) {
                 if (component != null) {
@@ -92,12 +77,6 @@ public class OverlayViewController {
         public void requestStop(Context context) {
             Intent service = new Intent(context, OverlayViewService.class);
             boolean isSuccess = context.stopService(service);
-
-            // Wake lock.
-            if (mWakeLock != null) {
-                mWakeLock.release();
-                mWakeLock = null;
-            }
 
             if (Log.IS_DEBUG) Log.logDebug(TAG, "requestStop() : isSuccess = " + isSuccess);
         }
@@ -123,9 +102,8 @@ public class OverlayViewController {
      * Start overlay view finder.
      *
      * @param context
-     * @param isAlwaysReloadEnabled
      */
-    public void start(Context context, boolean isAlwaysReloadEnabled) {
+    public void start(Context context) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "start() : E");
 
         if (mRootView != null) {
@@ -136,9 +114,6 @@ public class OverlayViewController {
 
         // Cache master context.
         mContext = context;
-
-        // Flag.
-        mIsAlwaysReloadEnabled = isAlwaysReloadEnabled;
 
         // Load preferences.
         loadPreferences();
@@ -155,9 +130,7 @@ public class OverlayViewController {
     }
 
     private void loadPreferences() {
-
-
-
+        // NOP.
     }
 
     /**

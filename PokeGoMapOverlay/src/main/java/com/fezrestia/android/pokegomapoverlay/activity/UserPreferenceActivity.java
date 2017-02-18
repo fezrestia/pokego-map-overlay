@@ -11,17 +11,14 @@ import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.UserApplication;
 import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.util.Log;
 
 public class UserPreferenceActivity extends PreferenceActivity {
     // Log tag.
-    private static final String TAG = UserPreferenceActivity.class.getSimpleName();
+    private static final String TAG = "UserPreferenceActivity";
 
     // Preference.
     private Preference mOverlayEnDis = null;
-    private Preference mCycleRecordEnDis = null;
-    private Preference mAlwaysReloadEnDis = null;
-    private Preference mReloadIntervalSetting = null;
     private Preference mBaseLoadUrlSetting = null;
 
     // Setting value.
@@ -70,14 +67,11 @@ public class UserPreferenceActivity extends PreferenceActivity {
     }
 
     private void updatePreferences() {
-
-
+        // NOP.
     }
 
     private void applyCurrentPreferences() {
-
-
-
+        // NOP.
     }
 
     private final OnPreferenceChangeListenerImpl mOnPreferenceChangeListener
@@ -95,16 +89,10 @@ public class UserPreferenceActivity extends PreferenceActivity {
                         final boolean isChecked = ((Boolean) value).booleanValue();
 
                         if (isChecked) {
-                            // Update UI.
-                            mCycleRecordEnDis.setEnabled(true);
-
                             // Start overlay.
                             OverlayViewController.LifeCycleTrigger.getInstance()
-                                    .requestStart(getApplicationContext(), mIsAlwaysReload);
+                                    .requestStart(getApplicationContext());
                         } else {
-                            // Update UI.
-                            mCycleRecordEnDis.setEnabled(false);
-
                             // Stop overlay.
                             OverlayViewController.LifeCycleTrigger.getInstance()
                                     .requestStop(getApplicationContext());
@@ -133,6 +121,7 @@ public class UserPreferenceActivity extends PreferenceActivity {
 
         switch (key) {
             case Constants.SP_KEY_OVERLAY_VIEW_ENABLED:
+                // NOP.
                 break;
 
             case Constants.SP_KEY_BASE_LOAD_URL:
@@ -163,3 +152,4 @@ public class UserPreferenceActivity extends PreferenceActivity {
         }
     }
 }
+

@@ -26,7 +26,7 @@ import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.UserApplication;
 import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
-import com.fezrestia.android.pokegomapoverlay.util.Log;
+import com.fezrestia.android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,10 +37,10 @@ import java.util.concurrent.Executors;
 
 public class OverlayRootView extends FrameLayout {
     // Log tag.
-    private static final String TAG = OverlayRootView.class.getSimpleName();
+    private static final String TAG = "OverlayRootView";
 
     // UI thread worker.
-    private Handler mUiWorker = new Handler();
+    private Handler mUiWorker = UserApplication.getUiThreadHandler();
 
     // Web.
     private FrameLayout mUserWebViewContainer = null;
@@ -49,23 +49,13 @@ public class OverlayRootView extends FrameLayout {
     // HUD.
     private FrameLayout mHudViewContainer = null;
     private ImageView mEdgeFrame = null;
-    private TextView mClockIndicator = null;
 
     // UI interaction.
     private FrameLayout mInteractionViewContainer = null;
-//    private ImageView mCloseButton = null;
-    private ImageView mCaptureButton = null;
     private ImageView mReloadButton = null;
 
     // Grip.
     private View mSliderGrip = null;
-
-    // Time.
-    private static final SimpleDateFormat TIME_INDICATOR_SDF
-            = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-
-    // Clock update cycle.
-    private static final int CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS = 10000;
 
     // Display coordinates.
     private int mDisplayLongLineLength = 0;
@@ -96,9 +86,6 @@ public class OverlayRootView extends FrameLayout {
 
     // UI scale.
     private float mUiScaleRate = 1.0f; // Default.
-
-    // Capture delay. e.g. waiting for java script execution done.
-    private static final int CAPTURE_DELAY_MILLIS = 10000;
 
     // Grip width.
     private static final int SLIDER_GRIP_WIDTH_PIX = 1080 - 960;
@@ -237,7 +224,6 @@ public class OverlayRootView extends FrameLayout {
      * Release all resources.
      */
     public void release() {
-        mUiWorker.removeCallbacks(mUpdateClockIndicatorTask);
         mUiWorker.removeCallbacks(mShowViewTask);
         mUiWorker.removeCallbacks(mHideViewTask);
 
@@ -247,7 +233,6 @@ public class OverlayRootView extends FrameLayout {
         }
 
         if (mUserWebView != null) {
-            mUserWebView.setLoadingStateCallback(null);
             mUserWebView.release();
             mUserWebView = null;
         }
@@ -503,38 +488,6 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
-
-
-//    private final HideButtonOnTouchListenerImpl mHideButtonOnTouchListenerImpl
-//            = new HideButtonOnTouchListenerImpl();
-//    private class HideButtonOnTouchListenerImpl implements OnTouchListener {
-//        @Override
-//        public boolean onTouch(View v, MotionEvent event) {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_UP:
-//                    // fall-through.
-//                case MotionEvent.ACTION_CANCEL:
-//                    OverlayViewController.getInstance().pause();
-//                    break;
-//
-//                default:
-//                    // NOP;
-//                    break;
-//            }
-//
-//            return true;
-//        }
-//    }
-
-    private final CaptureButtonOnTouchListenerImpl mCaptureButtonOnTouchListenerImpl
-            = new CaptureButtonOnTouchListenerImpl();
-    private class CaptureButtonOnTouchListenerImpl implements OnTouchListener {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return true;
-        }
-    }
-
     private final ReloadButtonOnTouchListenerImpl mReloadButtonOnTouchListenerImpl
             = new ReloadButtonOnTouchListenerImpl();
     private class ReloadButtonOnTouchListenerImpl implements OnTouchListener {
@@ -573,56 +526,6 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
-
-
-    private String getTimeString() {
-        Calendar calendar = Calendar.getInstance();
-        return TIME_INDICATOR_SDF.format(calendar.getTime());
-    }
-
-    private final UpdateClockIndicatorTask mUpdateClockIndicatorTask
-            = new UpdateClockIndicatorTask();
-    private class UpdateClockIndicatorTask implements Runnable {
-        @Override
-        public void run() {
-            if (mClockIndicator != null) {
-                // Update time.
-                mClockIndicator.setText(getTimeString());
-
-                // NOTICE:
-                //   WebView is not rendered correctly after time indicator is updated
-                //   like as SurfaceView. So, invalidate to refresh WebView area.
-                mUserWebViewContainer.invalidate();
-
-                // Next.
-                mUiWorker.postDelayed(this, CLOCK_INDICATOR_UPDATE_INTERVAL_MILLIS);
-            }
-        }
-    }
-
-
-
-    @Override
-    public void onFinishInflate() {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onFinishInflate()");
-        super.onFinishInflate();
-        // NOP.
-    }
-
-    @Override
-    public void onAttachedToWindow() {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onAttachedToWindow()");
-        super.onAttachedToWindow();
-        // NOP.
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "onDetachedFromWindow()");
-        super.onDetachedFromWindow();
-        // NOP.
-    }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (Log.IS_DEBUG) Log.logDebug(TAG,
@@ -632,25 +535,6 @@ public class OverlayRootView extends FrameLayout {
         // Update UI.
         updateTotalUserInterface();
     }
-
-    @Override
-    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
-//        if (Log.IS_DEBUG) Log.logDebug(TAG,
-//                "onLayout() : [Changed=" + changed + "] [Rect="
-//                 + left + ", " + top + ", " + right + ", " + bottom + "]");
-        super.onLayout(changed, left, top, right, bottom);
-        // NOP.
-    }
-
-    @Override
-    public void onSizeChanged(int curW, int curH, int nxtW, int nxtH) {
-//        if (Log.IS_DEBUG) Log.logDebug(TAG,
-//                "onSizeChanged() : [CUR=" + curW + "x" + curH + "] [NXT=" +  nxtW + "x" + nxtH + "]");
-        super.onSizeChanged(curW, curH, nxtW, nxtH);
-        // NOP.
-    }
-
-
 
     private class SliderGripTouchEventHandler implements View.OnTouchListener {
         private int mOnDownWinPosX = 0;
@@ -726,7 +610,6 @@ public class OverlayRootView extends FrameLayout {
 
             return true;
         }
-
     }
 
     private static class WindowPositionCorrectionTask implements Runnable {

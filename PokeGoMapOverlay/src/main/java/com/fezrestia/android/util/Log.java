@@ -1,4 +1,4 @@
-package com.fezrestia.android.pokegomapoverlay.util;
+package com.fezrestia.android.util;
 
 public class Log {
     // All area total log trigger.

@@ -1,4 +1,5 @@
 <resources>
+
     <string name="app_name">Poke-GO Map Overlay</string>
 
     <string name="preference_label">Poke-GO Map Overlay</string>
