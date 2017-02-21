@@ -39,9 +39,8 @@ public class UserWebView extends WebView {
     private static final String INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME = "jsni";
 
     // JS file.
-    //
-    // NO JavaScript.
-    //
+    private static final String JS_P_GO_SEARCH_HIDE_AD = "p_go_search_hide_ad.js";
+    private ExecuteJsTask mHideAdTask = null;
 
     private class JsExecutionCallback implements ValueCallback<String> {
         // Log tag.
@@ -101,9 +100,9 @@ public class UserWebView extends WebView {
         addJavascriptInterface(mJSNI, INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME);
 
         // Java Script.
-//        String script;
-//        script = loadJs("JS FILE_PATH");
-//        mJsTask = new ExecuteJsTask(script, new JsExecutionCallback());
+        String script;
+        script = loadJs(JS_P_GO_SEARCH_HIDE_AD);
+        mHideAdTask = new ExecuteJsTask(script, new JsExecutionCallback());
 
         // Tasks.
         mReloadTask = new ReloadTask();
@@ -152,6 +151,10 @@ public class UserWebView extends WebView {
             if (mReloadTask != null) {
                 mUiWorker.removeCallbacks(mReloadTask);
                 mReloadTask = null;
+            }
+            if (mHideAdTask != null) {
+                mUiWorker.removeCallbacks(mHideAdTask);
+                mHideAdTask = null;
             }
         }
         if (mBackWorker != null) {
@@ -217,7 +220,8 @@ public class UserWebView extends WebView {
         @Override
         public void onPageFinished(WebView view, String url) {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "onPageFinished()");
-            // NOP.
+
+            mUiWorker.post(mHideAdTask);
         }
 
         @Override
