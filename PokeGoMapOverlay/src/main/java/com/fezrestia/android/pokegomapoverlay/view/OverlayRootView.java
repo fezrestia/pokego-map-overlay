@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -580,5 +581,27 @@ public class OverlayRootView extends FrameLayout {
 
             if (Log.IS_DEBUG) Log.logDebug(TAG, "WindowPositionCorrectionTask.run() : X");
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (Log.IS_DEBUG) Log.logDebug(TAG, "dispatchKeyEvent() : KeyCode=" + event.getKeyCode());
+
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_BACK:
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    // Go back on WebView.
+                    if (mUserWebView.canGoBack()) {
+                        mUserWebView.goBack();
+                    }
+                }
+                return true;
+
+            default:
+                // NOP.
+                break;
+        }
+
+        return false;
     }
 }
