@@ -1,9 +1,11 @@
 package com.fezrestia.android.pokegomapoverlay.view;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -80,17 +82,21 @@ public class UserWebView extends WebView {
         WebSettings webSettings = getSettings();
 //        webSettings.setAllowContentAccess(true);
 //        webSettings.setAllowFileAccess(true);
-//        webSettings.setAllowFileAccessFromFileURLs(true);
-//        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setAllowFileAccessFromFileURLs(true);
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setAppCacheEnabled(true);
 //        webSettings.setBlockNetworkImage(false);
 //        webSettings.setBlockNetworkLoads(false);
-        webSettings.setBuiltInZoomControls(false);
+//        webSettings.setBuiltInZoomControls(false);
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setDatabaseEnabled(true);
         webSettings.setDisplayZoomControls(false);
+        webSettings.setDomStorageEnabled(true);
         webSettings.setGeolocationEnabled(true);
         webSettings.setJavaScriptEnabled(true);
-
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+//        webSettings.setLoadsImagesAutomatically(true);
+//        webSettings.setUseWideViewPort(true);
+//        webSettings.setUserAgentString("Desktop");
 
         addJavascriptInterface(mJSNI, INJECTED_JAVA_SCRIPT_NATIVE_INTERFACE_OBJECT_NAME);
 
@@ -232,7 +238,26 @@ public class UserWebView extends WebView {
         public void onGeolocationPermissionsShowPrompt(
                 String origin,
                 GeolocationPermissions.Callback callback) {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "onGeolocationPermissionShowPrompt()");
+
             callback.invoke(origin, true, true); // Allow to use geo API and retain this.
+        }
+
+        @Override
+        public void onPermissionRequest(PermissionRequest request) {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "onPermissionRequest()");
+
+            if (Log.IS_DEBUG) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    String[] resources = request.getResources();
+
+                    for (String resource : resources) {
+                        Log.logDebug(TAG, "    Permission=" + resource);
+                    }
+                } else {
+                    Log.logDebug(TAG, "PermissionRequest.getResources() is not supported.");
+                }
+            }
         }
     }
 }
