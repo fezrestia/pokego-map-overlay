@@ -39,12 +39,13 @@ public class OverlayViewService extends Service {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onStartCommand() : E");
 
         // Preference trigger intent.
-        Intent showOverlayTrigger = new Intent(Constants.INTENT_ACTION_START_PREFERENCE_ACTIVITY);
-        showOverlayTrigger.setPackage(getPackageName());
+//        Intent notifyIntent = new Intent(Constants.INTENT_ACTION_START_PREFERENCE_ACTIVITY);
+        Intent notifyIntent = new Intent(Constants.INTENT_ACTION_TOGGLE_OVERLAY_VISIBILITY);
+        notifyIntent.setPackage(getPackageName());
         PendingIntent notificationContent = PendingIntent.getBroadcast(
                 this,
                 0,
-                showOverlayTrigger,
+                notifyIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Foreground notification.
@@ -61,7 +62,6 @@ public class OverlayViewService extends Service {
 
         // Start overlay view finder.
         OverlayViewController.getInstance().start(OverlayViewService.this);
-        OverlayViewController.getInstance().resume();
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "onStartCommand() : X");
         return START_STICKY;
@@ -73,7 +73,6 @@ public class OverlayViewService extends Service {
         super.onDestroy();
 
         // Stop overlay view finder.
-        OverlayViewController.getInstance().pause();
         OverlayViewController.getInstance().stop();
 
         // Stop foreground.

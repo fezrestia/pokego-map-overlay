@@ -1,9 +1,13 @@
 package com.fezrestia.android.pokegomapoverlay;
 
 public class Constants {
-    // Intent constants.
+    // Intent action for start preferences activity.
     public static final String INTENT_ACTION_START_PREFERENCE_ACTIVITY
             = "com.fezrestia.android.pokegomapoverlay.intent.ACTION_START_PREFERENCE";
+
+    // Intent action for overlay visibility switch.
+    public static final String INTENT_ACTION_TOGGLE_OVERLAY_VISIBILITY
+            = "com.fezrestia.android.pokegomapoverlay.intent.ACTION_TOGGLE_OVERLAY_VISIBILITY";
 
     /** SP Key, overlay en/disable. */
     public static final String SP_KEY_OVERLAY_VIEW_ENABLED = "is-overlay-view-enabled";

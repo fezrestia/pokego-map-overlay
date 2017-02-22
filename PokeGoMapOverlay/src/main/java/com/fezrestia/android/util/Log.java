@@ -2,7 +2,7 @@ package com.fezrestia.android.util;
 
 public class Log {
     // All area total log trigger.
-    public static final boolean IS_DEBUG = true;
+    public static final boolean IS_DEBUG = false;
 
     /**
      * Debug log.

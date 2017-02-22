@@ -35,6 +35,7 @@
         >
             <intent-filter>
                 <action android:name="com.fezrestia.android.pokegomapoverlay.intent.ACTION_START_PREFERENCE" />
+                <action android:name="com.fezrestia.android.pokegomapoverlay.intent.ACTION_TOGGLE_OVERLAY_VISIBILITY" />
             </intent-filter>
         </receiver>
 

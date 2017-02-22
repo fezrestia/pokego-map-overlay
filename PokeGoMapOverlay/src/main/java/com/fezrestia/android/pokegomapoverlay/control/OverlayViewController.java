@@ -3,24 +3,16 @@ package com.fezrestia.android.pokegomapoverlay.control;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.view.LayoutInflater;
 
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.service.OverlayViewService;
-import com.fezrestia.android.pokegomapoverlay.UserApplication;
 import com.fezrestia.android.pokegomapoverlay.view.OverlayRootView;
 import com.fezrestia.android.util.Log;
 
 public class OverlayViewController {
     // Log tag.
     private static final String TAG = "OverlayViewController";
-
-    // Master context.
-    private  Context mContext;
-
-    // UI thread worker.
-    private Handler mUiWorker = UserApplication.getUiThreadHandler();
 
     // Singleton instance
     private static final OverlayViewController INSTANCE = new OverlayViewController();
@@ -43,7 +35,7 @@ public class OverlayViewController {
         /**
          * Get accessor.
          *
-         * @return
+         * @return Life cycle trigger instance.
          */
         public static LifeCycleTrigger getInstance() {
             return INSTANCE;
@@ -52,7 +44,7 @@ public class OverlayViewController {
         /**
          * Start.
          *
-         * @param context
+         * @param context Master context.
          */
         public void requestStart(Context context) {
             Intent service = new Intent(context, OverlayViewService.class);
@@ -70,7 +62,7 @@ public class OverlayViewController {
         /**
          * Stop.
          *
-         * @param context
+         * @param context Master context.
          */
         public void requestStop(Context context) {
             Intent service = new Intent(context, OverlayViewService.class);
@@ -90,7 +82,7 @@ public class OverlayViewController {
     /**
      * Get singleton controller instance.
      *
-     * @return
+     * @return Controller singleton instance.
      */
     public static synchronized OverlayViewController getInstance() {
         return INSTANCE;
@@ -99,7 +91,7 @@ public class OverlayViewController {
     /**
      * Start overlay view finder.
      *
-     * @param context
+     * @param context Master context.
      */
     public void start(Context context) {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "start() : E");
@@ -109,9 +101,6 @@ public class OverlayViewController {
             Log.logError(TAG, "Error. Already started.");
             return;
         }
-
-        // Cache master context.
-        mContext = context;
 
         // Load preferences.
         loadPreferences();
@@ -132,37 +121,6 @@ public class OverlayViewController {
     }
 
     /**
-     * Resume overlay view finder.
-     */
-    public void resume() {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "resume() : E");
-
-        mRootView.requestShowOverlay();
-
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "resume() : X");
-    }
-
-    /**
-     * Overlay UI is active or not.
-     *
-     * @return
-     */
-    public boolean isOverlayActive() {
-        return (mRootView != null);
-    }
-
-    /**
-     * Pause overlay view finder.
-     */
-    public void pause() {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "pause() : E");
-
-        mRootView.requestHideOverlay();
-
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "pause() : X");
-    }
-
-    /**
      * Stop overlay view finder.
      */
     public void stop() {
@@ -175,13 +133,23 @@ public class OverlayViewController {
         }
 
         // Release references.
-        mContext = null;
-        if (mRootView != null) {
-            mRootView.release();
-            mRootView.removeFromOverlayWindow();
-            mRootView = null;
-        }
+        mRootView.release();
+        mRootView.removeFromOverlayWindow();
+        mRootView = null;
 
         if (Log.IS_DEBUG) Log.logDebug(TAG, "stop() : X");
+    }
+
+    /**
+     * Toggle overlay view visibility.
+     */
+    public void toggleVisibility() {
+        if (mRootView != null) {
+            if (mRootView.isOverlayShown()) {
+                mRootView.hide();
+            } else {
+                mRootView.show(false);
+            }
+        }
     }
 }

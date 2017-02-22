@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.activity.UserPreferenceActivity;
+import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
 import com.fezrestia.android.util.Log;
 
 public class OverlayViewReceiver extends BroadcastReceiver {
@@ -22,16 +23,23 @@ public class OverlayViewReceiver extends BroadcastReceiver {
         if (action == null) {
             if (Log.IS_DEBUG) Log.logDebug(TAG, "ACTION is NULL.");
             // NOP.
-        } else if (Constants.INTENT_ACTION_START_PREFERENCE_ACTIVITY.equals(action)) {
-            // Start preference activity.
-            Intent startPreference = new Intent(Intent.ACTION_MAIN);
-            startPreference.setClass(context, UserPreferenceActivity.class);
-            startPreference.addFlags(0 // dummy
-                    | Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(startPreference);
-        } else {
-            // Unexpected Action.
-            throw new IllegalArgumentException("Unexpected Action : " + action);
+        } else switch (action) {
+            case Constants.INTENT_ACTION_START_PREFERENCE_ACTIVITY:
+                // Start preference activity.
+                Intent startPreference = new Intent(Intent.ACTION_MAIN);
+                startPreference.setClass(context, UserPreferenceActivity.class);
+                startPreference.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(startPreference);
+                break;
+
+            case Constants.INTENT_ACTION_TOGGLE_OVERLAY_VISIBILITY:
+                // Toggle overlay visibility.
+                OverlayViewController.getInstance().toggleVisibility();
+                break;
+
+            default:
+                // Unexpected Action.
+                throw new IllegalArgumentException("Unexpected Action : " + action);
         }
     }
 }
