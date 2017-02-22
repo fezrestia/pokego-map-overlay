@@ -2,8 +2,10 @@ package com.fezrestia.android.pokegomapoverlay.view;
 
 import android.content.Context;
 import android.os.Handler;
+import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -67,7 +69,9 @@ public class UserWebView extends WebView {
      * Initialize.
      */
     public void initialize() {
+        // Web callback.
         setWebViewClient(mUserWebViewClient);
+        setWebChromeClient(mUserWebChromeClient);
 
         // Debug.
         setWebContentsDebuggingEnabled(true);
@@ -219,6 +223,16 @@ public class UserWebView extends WebView {
 
             if (Log.IS_DEBUG) Log.logDebug(TAG, "shouldOverrideUrlLoading() : X");
             return true;
+        }
+    }
+
+    private final UserWebChromeClient mUserWebChromeClient = new UserWebChromeClient();
+    private class UserWebChromeClient extends WebChromeClient {
+        @Override
+        public void onGeolocationPermissionsShowPrompt(
+                String origin,
+                GeolocationPermissions.Callback callback) {
+            callback.invoke(origin, true, true); // Allow to use geo API and retain this.
         }
     }
 }
