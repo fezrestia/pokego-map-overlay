@@ -32,11 +32,11 @@ public class UserApplication extends Application {
         // Check version.
         int curVersion = mGlobalSharedPreferences.getInt(KEY_SHARED_PREFERENCES_VERSION, 0);
         if (curVersion != VAL_SHARED_PREFERENCES_VERSION) {
-            mGlobalSharedPreferences.edit().clear().commit();
+            mGlobalSharedPreferences.edit().clear().apply();
             mGlobalSharedPreferences.edit().putInt(
                     KEY_SHARED_PREFERENCES_VERSION,
                     VAL_SHARED_PREFERENCES_VERSION)
-                    .commit();
+                    .apply();
         }
 
         // UI thread handler.
@@ -59,7 +59,7 @@ public class UserApplication extends Application {
     /**
      * Get global shared preferences instance.
      *
-     * @return
+     * @return Global SharedPreferences accessor.
      */
     public static SharedPreferences getGlobalSharedPreferences() {
         return mGlobalSharedPreferences;
@@ -68,7 +68,7 @@ public class UserApplication extends Application {
     /**
      * Get global UI thread handler.
      *
-     * @return
+     * @return Global UI thread handler accessor.
      */
     public static Handler getUiThreadHandler() {
         return mUiThreadHandler;

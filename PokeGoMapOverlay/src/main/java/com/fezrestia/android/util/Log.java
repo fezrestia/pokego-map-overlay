@@ -7,8 +7,8 @@ public class Log {
     /**
      * Debug log.
      *
-     * @param tag
-     * @param event
+     * @param tag Log tag.
+     * @param event Log event.
      */
     public static void logDebug(String tag, String event) {
         log("DEBUG", tag, event);
@@ -17,8 +17,8 @@ public class Log {
     /**
      * Error log.
      *
-     * @param tag
-     * @param event
+     * @param tag Log tag.
+     * @param event Log event.
      */
     public static void logError(String tag, String event) {
         log("ERROR", tag, event);

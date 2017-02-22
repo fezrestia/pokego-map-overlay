@@ -2,7 +2,6 @@ package com.fezrestia.android.pokegomapoverlay.view;
 
 import android.content.Context;
 import android.os.Handler;
-import android.view.MotionEvent;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
@@ -13,7 +12,6 @@ import com.fezrestia.android.pokegomapoverlay.UserApplication;
 import com.fezrestia.android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,9 +27,6 @@ public class UserWebView extends WebView {
 
     // Background worker thread.
     private ExecutorService mBackWorker = null;
-
-    // Is interactive mode or not.
-    private boolean mIsInInteractiveMode = true;
 
     // JS done timeout.
     private static final int JS_DONE_TIMEOUT = 1000;
@@ -61,7 +56,7 @@ public class UserWebView extends WebView {
     /**
      * CONSTRUCTOR.
      *
-     * @param context
+     * @param context View context.
      */
     public UserWebView(Context context) {
         super(context);
@@ -107,7 +102,7 @@ public class UserWebView extends WebView {
     /**
      * Request to load URL.
      *
-     * @param url
+     * @param url Load target URL.
      */
     public void loadWebPase(String url) {
         loadUrl(url);
@@ -125,8 +120,6 @@ public class UserWebView extends WebView {
             }
             reader.close();
             fis.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -144,7 +137,6 @@ public class UserWebView extends WebView {
 
         setWebViewClient(null);
         setWebChromeClient(null);
-        setPictureListener(null);
 
         if (mUiWorker != null) {
             if (mReloadTask != null) {
@@ -173,15 +165,15 @@ public class UserWebView extends WebView {
 
     private class ExecuteJsTask implements Runnable {
         private final String mScript;
-        private final ValueCallback mCallback;
+        private final ValueCallback<String> mCallback;
 
         /**
          * CONSTRUCTOR.
          *
-         * @param script
-         * @param callback
+         * @param script JavaScript source codes.
+         * @param callback JavaScript done callback.
          */
-        public ExecuteJsTask(String script, ValueCallback callback) {
+        public ExecuteJsTask(String script, ValueCallback<String> callback) {
             mScript = script;
             mCallback = callback;
         }
@@ -200,7 +192,7 @@ public class UserWebView extends WebView {
         /**
          * Called on content HTML loaded.
          *
-         * @param htmlSrc
+         * @param htmlSrc Loaded HTML source codes.
          */
         @JavascriptInterface
         public final void onContentHtmlLoaded(final String htmlSrc) {
@@ -227,29 +219,6 @@ public class UserWebView extends WebView {
 
             if (Log.IS_DEBUG) Log.logDebug(TAG, "shouldOverrideUrlLoading() : X");
             return true;
-        }
-    }
-
-    /**
-     * Enable interactive mode.
-     */
-    public void enableInteraction() {
-        mIsInInteractiveMode = true;
-    }
-
-    /**
-     * Disable interactive mode.
-     */
-    public void disableInteraction() {
-        mIsInInteractiveMode = false;
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (mIsInInteractiveMode) {
-            return super.dispatchTouchEvent(event);
-        } else {
-            return false;
         }
     }
 }

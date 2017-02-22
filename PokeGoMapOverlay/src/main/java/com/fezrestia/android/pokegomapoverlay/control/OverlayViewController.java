@@ -4,10 +4,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.view.LayoutInflater;
 
-import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.service.OverlayViewService;
 import com.fezrestia.android.pokegomapoverlay.UserApplication;
@@ -121,7 +119,7 @@ public class OverlayViewController {
         // Create overlay view.
         mRootView = (OverlayRootView)
                 LayoutInflater.from(context).inflate(R.layout.overlay_root_view, null);
-        mRootView.initialize(false); //TODO:Impl loading detection
+        mRootView.initialize();
 
         // Add to window.
         mRootView.addToOverlayWindow();

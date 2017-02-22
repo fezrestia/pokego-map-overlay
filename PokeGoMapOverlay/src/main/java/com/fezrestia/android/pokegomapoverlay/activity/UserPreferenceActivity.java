@@ -1,11 +1,8 @@
 package com.fezrestia.android.pokegomapoverlay.activity;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;

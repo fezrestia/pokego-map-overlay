@@ -6,4 +6,7 @@
 
     <string name="ongoing_notification">Poke-GO Map ON</string>
 
+    <!-- Content Description. -->
+    <string name="tts_slider">View slider</string>
+
 </resources>

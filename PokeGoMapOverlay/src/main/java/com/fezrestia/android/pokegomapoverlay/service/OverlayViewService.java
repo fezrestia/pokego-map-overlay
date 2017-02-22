@@ -8,7 +8,6 @@ import android.os.IBinder;
 
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
-import com.fezrestia.android.pokegomapoverlay.activity.UserPreferenceActivity;
 import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
 import com.fezrestia.android.util.Log;
 

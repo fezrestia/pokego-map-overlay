@@ -3,13 +3,8 @@ package com.fezrestia.android.pokegomapoverlay.view;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Display;
@@ -20,20 +15,11 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.fezrestia.android.pokegomapoverlay.Constants;
 import com.fezrestia.android.pokegomapoverlay.R;
 import com.fezrestia.android.pokegomapoverlay.UserApplication;
-import com.fezrestia.android.pokegomapoverlay.control.OverlayViewController;
 import com.fezrestia.android.util.Log;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class OverlayRootView extends FrameLayout {
     // Log tag.
@@ -120,14 +106,12 @@ public class OverlayRootView extends FrameLayout {
 
     /**
      * Initialize all of configurations.
-     *
-     * @param isLoadingDetectionEnabled
      */
-    public void initialize(boolean isLoadingDetectionEnabled) {
+    public void initialize() {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "initialize() : E");
 
         // Cache instance references.
-        initializeInstances(isLoadingDetectionEnabled);
+        initializeInstances();
 
         // Load setting.
         loadPreferences();
@@ -141,7 +125,7 @@ public class OverlayRootView extends FrameLayout {
         if (Log.IS_DEBUG) Log.logDebug(TAG, "initialize() : X");
     }
 
-    private void initializeInstances(boolean isLoadingDetectionEnabled) {
+    private void initializeInstances() {
         // Web view container.
         mUserWebViewContainer = (FrameLayout) findViewById(R.id.web_view_container);
         // HUD view container.
@@ -382,8 +366,6 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
-
-
     /**
      * Request to show overlay.
      */
@@ -410,7 +392,7 @@ public class OverlayRootView extends FrameLayout {
 
     private abstract class ViewVisibilityControlTask implements Runnable {
         // Log tag.
-        private final String TAG = ViewVisibilityControlTask.class.getSimpleName();
+        private final String TAG = "ViewVisibilityControlTask";
 
         // Alpha def.
         private final float SHOWN_ALPHA = 1.0f;
@@ -429,19 +411,8 @@ public class OverlayRootView extends FrameLayout {
         /**
          * Reset state. Call this before post.
          */
-        public void reset() {
+        void reset() {
             mActualAlpha = getAlpha();
-        }
-
-        /**
-         * Control immediately.
-         */
-        public void directControl() {
-            if (isFadeIn()) {
-                setAlpha(SHOWN_ALPHA);
-            } else {
-                setAlpha(HIDDEN_ALPHA);
-            }
         }
 
         @Override
@@ -505,24 +476,6 @@ public class OverlayRootView extends FrameLayout {
             }
 
             return true;
-        }
-    }
-
-    /**
-     * Enable interaction with this view.
-     */
-    public void enableInteraction() {
-        if (mUserWebView != null) {
-            mUserWebView.enableInteraction();
-        }
-    }
-
-    /**
-     * Disable interaction with this view.
-     */
-    public void disableInteraction() {
-        if (mUserWebView != null) {
-            mUserWebView.disableInteraction();
         }
     }
 
@@ -635,13 +588,13 @@ public class OverlayRootView extends FrameLayout {
         /**
          * CONSTRUCTOR.
          *
-         * @param targetView
-         * @param targetPos
-         * @param winMng
-         * @param winParams
-         * @param handler
+         * @param targetView Control target view.
+         * @param targetPos Target position.
+         * @param winMng WindowManager instance.
+         * @param winParams Window layout params.
+         * @param handler UI thread handler.
          */
-        public WindowPositionCorrectionTask(
+        WindowPositionCorrectionTask(
                 View targetView,
                 Point targetPos,
                 WindowManager winMng,

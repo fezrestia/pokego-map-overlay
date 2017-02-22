@@ -2,6 +2,7 @@
 
 <com.fezrestia.android.pokegomapoverlay.view.OverlayRootView
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -36,6 +37,7 @@
                     android:layout_height="match_parent"
             >
             </FrameLayout>
+
         </FrameLayout>
 
         <!-- Slider Grip -->
@@ -50,6 +52,8 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/slider_grip"
                     android:gravity="left|top"
+                    android:contentDescription="@string/tts_slider"
+                    tools:ignore="RtlHardcoded"
             />
         </FrameLayout>
 
