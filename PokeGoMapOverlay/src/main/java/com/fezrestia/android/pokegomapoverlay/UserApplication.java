@@ -28,7 +28,6 @@ public class UserApplication extends Application {
 
         // Create shared preferences accessor.
         mGlobalSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         // Check version.
         int curVersion = mGlobalSharedPreferences.getInt(KEY_SHARED_PREFERENCES_VERSION, 0);
         if (curVersion != VAL_SHARED_PREFERENCES_VERSION) {
@@ -38,6 +37,10 @@ public class UserApplication extends Application {
                     VAL_SHARED_PREFERENCES_VERSION)
                     .apply();
         }
+        // Reset overlay enabled flag.
+        mGlobalSharedPreferences.edit()
+                .putBoolean(Constants.SP_KEY_OVERLAY_VIEW_ENABLED, false)
+                .apply();
 
         // UI thread handler.
         mUiThreadHandler = new Handler();
