@@ -58,6 +58,11 @@ public class OverlayRootView extends FrameLayout {
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 ;
+    private static final int UNINTERACTIVE_WINDOW_FLAGS = 0 // Dummy
+                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                ;
 
     // UI scale.
     private float mUiScaleRate = 1.0f; // Default.
@@ -185,6 +190,16 @@ public class OverlayRootView extends FrameLayout {
                 WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                 INTERACTIVE_WINDOW_FLAGS,
                 PixelFormat.TRANSLUCENT);
+    }
+
+    private void enableOverlayInteraction() {
+        mWindowLayoutParams.flags = INTERACTIVE_WINDOW_FLAGS;
+        mWindowManager.updateViewLayout(this, mWindowLayoutParams);
+    }
+
+    private void disableOverlayInteraction() {
+        mWindowLayoutParams.flags = UNINTERACTIVE_WINDOW_FLAGS;
+        mWindowManager.updateViewLayout(this, mWindowLayoutParams);
     }
 
     /**
@@ -357,8 +372,10 @@ public class OverlayRootView extends FrameLayout {
     public void show(boolean isOpened) {
         if (isOpened) {
             mWindowLayoutParams.x = mWinOpenPosX;
+            enableOverlayInteraction();
         } else {
             mWindowLayoutParams.x = mWinClosePosX;
+            disableOverlayInteraction();
         }
         mWindowManager.updateViewLayout(this, mWindowLayoutParams);
     }
@@ -368,6 +385,7 @@ public class OverlayRootView extends FrameLayout {
      */
     public void hide() {
         mWindowLayoutParams.x = WINDOW_HIDDEN_POS_X;
+        disableOverlayInteraction();
         mWindowManager.updateViewLayout(this, mWindowLayoutParams);
     }
 
@@ -447,9 +465,15 @@ public class OverlayRootView extends FrameLayout {
                     // Fixed position.
                     Point targetPoint;
                     if (mScreenSize.getShortLineSize() / 2 < event.getRawX()) {
+                        // To be opened.
                         targetPoint = new Point(mWinOpenPosX, mWindowLayoutParams.y);
+
+                        enableOverlayInteraction();
                     } else {
+                        // To be closed.
                         targetPoint = new Point(mWinClosePosX, mWindowLayoutParams.y);
+
+                        disableOverlayInteraction();
                     }
 
                     // Start fix.
