@@ -41,7 +41,6 @@ public class OverlayRootView extends FrameLayout {
 
     // UI interaction.
     private FrameLayout mInteractionViewContainer = null;
-    private ImageView mReloadButton = null;
 
     // Grip.
     private View mSliderGrip = null;
@@ -154,18 +153,6 @@ public class OverlayRootView extends FrameLayout {
         mEdgeFrame.setScaleType(ImageView.ScaleType.FIT_XY);
         mHudViewContainer.addView(mEdgeFrame, webViewParams);
 
-        // Reload button.
-        mReloadButton = new ImageView(getContext());
-        mReloadButton.setOnTouchListener(mReloadButtonOnTouchListenerImpl);
-        mReloadButton.setImageResource(R.drawable.reload_button);
-        FrameLayout.LayoutParams reloadButtonParams = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        reloadButtonParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
-        reloadButtonParams.leftMargin = 20;
-        reloadButtonParams.bottomMargin = 20;
-        mInteractionViewContainer.addView(mReloadButton, reloadButtonParams);
-
         // Slider grip.
         mSliderGrip = findViewById(R.id.slider_grip_container);
         mSliderGrip.setOnTouchListener(new SliderGripTouchEventHandler());
@@ -218,10 +205,6 @@ public class OverlayRootView extends FrameLayout {
         mEdgeFrame = null;
         mUserWebViewContainer = null;
         mHudViewContainer = null;
-        if (mReloadButton != null) {
-            mReloadButton.setOnTouchListener(null);
-            mReloadButton = null;
-        }
 
         setOnTouchListener(null);
 
@@ -388,26 +371,6 @@ public class OverlayRootView extends FrameLayout {
         mWindowLayoutParams.x = WINDOW_HIDDEN_POS_X;
         disableOverlayInteraction();
         mWindowManager.updateViewLayout(this, mWindowLayoutParams);
-    }
-
-    private final ReloadButtonOnTouchListenerImpl mReloadButtonOnTouchListenerImpl
-            = new ReloadButtonOnTouchListenerImpl();
-    private class ReloadButtonOnTouchListenerImpl implements OnTouchListener {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()){
-                case MotionEvent.ACTION_UP:
-                    mUserWebView.stopLoading();
-                    mUserWebView.reload();
-                    break;
-
-                default:
-                    // NOP.
-                    break;
-            }
-
-            return true;
-        }
     }
 
     @Override
@@ -593,6 +556,9 @@ public class OverlayRootView extends FrameLayout {
                     // Go back on WebView.
                     if (mUserWebView.canGoBack()) {
                         mUserWebView.goBack();
+                    } else {
+                        // This is root page.
+                        mUserWebView.reload();
                     }
                 }
                 return true;
