@@ -548,28 +548,78 @@ public class OverlayRootView extends FrameLayout {
         }
     }
 
+    private BackKeyLongPressDetectionTask mBackKeyLongPressDetectionTask = null;
+    private static final int LONG_PRESS_DETECTION_MILLIS = 1000;
+
+    private class BackKeyLongPressDetectionTask implements Runnable {
+        @Override
+        public void run() {
+            if (Log.IS_DEBUG) Log.logDebug(TAG, "KEYCODE_BACK : DOWN LONG PRESS");
+
+            if (mUserWebView != null) {
+                if (Log.IS_DEBUG) Log.logDebug(TAG, "Do reload.");
+                mUserWebView.reload();
+
+                // Release reference.
+                mBackKeyLongPressDetectionTask = null;
+            }
+        }
+    }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (Log.IS_DEBUG) Log.logDebug(TAG, "dispatchKeyEvent() : KeyCode=" + event.getKeyCode());
-
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_BACK:
-                if (event.getAction() == KeyEvent.ACTION_UP) {
-                    // Go back on WebView.
-                    if (mUserWebView.canGoBack()) {
-                        mUserWebView.goBack();
-                    } else {
-                        // This is root page.
-                        mUserWebView.reload();
-                    }
+                switch (event.getAction()) {
+                    case KeyEvent.ACTION_DOWN:
+                        if (Log.IS_DEBUG) Log.logDebug(TAG, "KEYCODE_BACK : DOWN");
+
+                        // Long press detector.
+                        if (mBackKeyLongPressDetectionTask == null) {
+                            mBackKeyLongPressDetectionTask = new BackKeyLongPressDetectionTask();
+                            getHandler().postDelayed(
+                                    mBackKeyLongPressDetectionTask,
+                                    LONG_PRESS_DETECTION_MILLIS);
+                        }
+
+                        break;
+
+                    case KeyEvent.ACTION_UP:
+                        if (Log.IS_DEBUG) Log.logDebug(TAG, "KEYCODE_BACK : UP");
+
+                        if (mBackKeyLongPressDetectionTask != null) {
+                            // Not long-pressed.
+                            if (Log.IS_DEBUG) Log.logDebug(TAG, "KEYCODE_BACK : Not Long Pressed");
+
+                            // Cancel long-press detector.
+                            if (mBackKeyLongPressDetectionTask != null) {
+                                getHandler().removeCallbacks(mBackKeyLongPressDetectionTask);
+                                mBackKeyLongPressDetectionTask = null;
+                            }
+
+                            // Go back on WebView.
+                            if (mUserWebView.canGoBack()) {
+                                mUserWebView.goBack();
+                            }
+                        } else {
+                            // Long-press detection task is triggered.
+                            if (Log.IS_DEBUG) Log.logDebug(TAG, "KEYCODE_BACK : Long Pressed");
+
+                            // NOP.
+                        }
+
+                        break;
+
+                    default:
+                        // NOP.
+                        break;
                 }
-                return true;
 
             default:
                 // NOP.
                 break;
         }
 
-        return false;
+        return true;
     }
 }
