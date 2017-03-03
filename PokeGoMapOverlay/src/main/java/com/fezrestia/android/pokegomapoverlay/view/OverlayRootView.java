@@ -54,11 +54,13 @@ public class OverlayRootView extends FrameLayout {
     // Window.
     private WindowManager mWindowManager = null;
     private WindowManager.LayoutParams mWindowLayoutParams = null;
+    @SuppressWarnings("PointlessBitwiseExpression")
     private static final int INTERACTIVE_WINDOW_FLAGS = 0 // Dummy
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 ;
-    private static final int UNINTERACTIVE_WINDOW_FLAGS = 0 // Dummy
+    @SuppressWarnings("PointlessBitwiseExpression")
+    private static final int NOT_INTERACTIVE_WINDOW_FLAGS = 0 // Dummy
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -186,7 +188,7 @@ public class OverlayRootView extends FrameLayout {
     }
 
     private void disableOverlayInteraction() {
-        mWindowLayoutParams.flags = UNINTERACTIVE_WINDOW_FLAGS;
+        mWindowLayoutParams.flags = NOT_INTERACTIVE_WINDOW_FLAGS;
         mWindowManager.updateViewLayout(this, mWindowLayoutParams);
     }
 
