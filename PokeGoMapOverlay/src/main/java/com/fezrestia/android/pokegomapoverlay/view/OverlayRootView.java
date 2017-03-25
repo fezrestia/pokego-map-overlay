@@ -314,11 +314,9 @@ public class OverlayRootView extends FrameLayout {
         // UI layout.
         updateLayoutParams();
 
-        // Ignore Landscape configuration.
-        if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if (isAttachedToWindow()) {
-                hide();
-            }
+        // After screen orientation changed or something, always hide overlay view.
+        if (isAttachedToWindow()) {
+            hide();
         }
     }
 

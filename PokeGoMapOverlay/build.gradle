@@ -7,8 +7,8 @@ android {
         applicationId "com.fezrestia.android.pokegomapoverlay"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 9
-        versionName '0.9'
+        versionCode 10
+        versionName '0.10'
     }
     buildTypes {
         release {
